@@ -14,10 +14,5 @@
 </main>
 
 <footer class="app-footer">
-  v{{ version }} ·
-  <select class="tz-select" (change)="onTzChange($event)">
-    @for (tz of timezones; track tz.value) {
-      <option [value]="tz.value" [selected]="settings.timezone() === tz.value">{{ tz.label }}</option>
-    }
-  </select>
+  v{{ version }}
 </footer>
