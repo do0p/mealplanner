@@ -5,6 +5,14 @@ import { ApiService } from '../../api.service';
 import { Recipe } from '../../models';
 import { formatQty } from '../../settings.service';
 
+interface IngredientDraft {
+  name: string;
+  quantity_per_person: number | null;
+  unit: string | null;
+  category: string | null;
+  raw_text: string | null;
+}
+
 @Component({
   selector: 'app-recipe-detail',
   imports: [FormsModule, RouterLink],
@@ -20,6 +28,12 @@ export class RecipeDetailPage implements OnInit {
   loading = signal(true);
   people = signal(2);
   deleting = signal(false);
+  editing = signal(false);
+  saving = signal(false);
+
+  draftTitle = signal('');
+  draftIngredients = signal<IngredientDraft[]>([]);
+  draftSteps = signal<string[]>([]);
 
   scaledIngredients = computed(() => {
     const r = this.recipe();
@@ -49,6 +63,74 @@ export class RecipeDetailPage implements OnInit {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  startEdit() {
+    const r = this.recipe()!;
+    this.draftTitle.set(r.title);
+    this.draftIngredients.set(r.ingredients.map(i => ({
+      name: i.name,
+      quantity_per_person: i.quantity_per_person,
+      unit: i.unit,
+      category: i.category,
+      raw_text: i.raw_text,
+    })));
+    this.draftSteps.set(r.steps.map(s => s.text));
+    this.editing.set(true);
+  }
+
+  cancelEdit() {
+    this.editing.set(false);
+  }
+
+  saveEdit() {
+    const r = this.recipe()!;
+    this.saving.set(true);
+    this.api.updateRecipe(r.id, {
+      title: this.draftTitle(),
+      ingredients: this.draftIngredients(),
+      steps: this.draftSteps().filter(s => s.trim()),
+    }).subscribe({
+      next: updated => { this.recipe.set(updated); this.editing.set(false); this.saving.set(false); },
+      error: () => this.saving.set(false),
+    });
+  }
+
+  approve() {
+    const r = this.recipe()!;
+    this.api.updateRecipe(r.id, { verification_status: 'ok' }).subscribe(updated => this.recipe.set(updated));
+  }
+
+  addIngredient() {
+    this.draftIngredients.update(list => [...list, { name: '', quantity_per_person: null, unit: null, category: null, raw_text: null }]);
+  }
+
+  removeIngredient(i: number) {
+    this.draftIngredients.update(list => list.filter((_, idx) => idx !== i));
+  }
+
+  updateIngredient(i: number, field: keyof IngredientDraft, value: string) {
+    this.draftIngredients.update(list => {
+      const copy = list.map(x => ({ ...x }));
+      if (field === 'quantity_per_person') {
+        copy[i][field] = value === '' ? null : Number(value);
+      } else {
+        (copy[i] as Record<string, unknown>)[field] = value === '' ? null : value;
+      }
+      return copy;
+    });
+  }
+
+  addStep() {
+    this.draftSteps.update(list => [...list, '']);
+  }
+
+  removeStep(i: number) {
+    this.draftSteps.update(list => list.filter((_, idx) => idx !== i));
+  }
+
+  updateStep(i: number, value: string) {
+    this.draftSteps.update(list => list.map((s, idx) => idx === i ? value : s));
   }
 
   delete() {

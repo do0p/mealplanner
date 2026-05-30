@@ -181,6 +181,7 @@ class RecipeUpdate(BaseModel):
     course: str | None = None
     calories_per_person: float | None = None
     protein_per_person: float | None = None
+    verification_status: str | None = None
     ingredients: list[IngredientWrite] | None = None
     steps: list[str] | None = None
 

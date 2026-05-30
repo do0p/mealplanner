@@ -94,6 +94,8 @@ def update_recipe(session: Session, recipe_id: int, data: RecipeUpdate) -> Recip
         r.calories_per_person = data.calories_per_person
     if data.protein_per_person is not None:
         r.protein_per_person = data.protein_per_person
+    if data.verification_status is not None:
+        r.verification_status = data.verification_status
     if data.ingredients is not None:
         r.ingredients = [
             Ingredient(

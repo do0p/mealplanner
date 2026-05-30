@@ -62,6 +62,49 @@
   }
 }
 
+.title-input {
+  font-size: 1.5rem;
+  font-weight: 700;
+  border: none;
+  border-bottom: 2px solid var(--color-primary);
+  background: transparent;
+  outline: none;
+  width: 100%;
+  margin-top: .25rem;
+  color: var(--color-text);
+}
+
+.edit-ingredient-list {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+}
+
+.edit-ingredient-row {
+  display: flex;
+  gap: .4rem;
+  align-items: center;
+
+  .ing-edit-qty  { width: 5rem; }
+  .ing-edit-unit { width: 4.5rem; }
+  .ing-edit-name { flex: 1; }
+}
+
+.edit-step-list {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.edit-step-row {
+  display: flex;
+  gap: .5rem;
+  align-items: flex-start;
+
+  .step-num { padding-top: .4rem; color: var(--color-text-muted); font-size: .85rem; min-width: 1.25rem; }
+  .step-edit-text { flex: 1; resize: vertical; }
+}
+
 .alert-warning {
   background: #fef3c7;
   border: 1px solid #fcd34d;

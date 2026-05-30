@@ -7,24 +7,35 @@
     <div class="flex justify-between" style="margin-bottom:1rem;flex-wrap:wrap;gap:.75rem">
       <div>
         <a routerLink="/recipes" class="text-muted" style="font-size:.85rem">← Recipes</a>
-        <h1 class="page-title" style="margin:.25rem 0 0">{{ recipe()!.title }}</h1>
+        @if (editing()) {
+          <input class="title-input" [ngModel]="draftTitle()" (ngModelChange)="draftTitle.set($event)" />
+        } @else {
+          <h1 class="page-title" style="margin:.25rem 0 0">{{ recipe()!.title }}</h1>
+        }
         @if (recipe()!.source_pages) {
           <p class="text-muted" style="font-size:.8rem">Pages {{ recipe()!.source_pages }}</p>
         }
       </div>
-      <div class="flex gap-1">
-        @if (recipe()!.source_file) {
-          <a [href]="sourceUrl()" target="_blank" class="btn-secondary btn-sm" style="display:inline-flex;align-items:center;padding:.35rem .75rem">
-            View source
-          </a>
+      <div class="flex gap-1" style="align-items:flex-start">
+        @if (!editing()) {
+          @if (recipe()!.source_file) {
+            <a [href]="sourceUrl()" target="_blank" class="btn-secondary btn-sm" style="display:inline-flex;align-items:center;padding:.35rem .75rem">
+              View source
+            </a>
+          }
+          <button class="btn-secondary btn-sm" (click)="startEdit()">Edit</button>
+          <button class="btn-danger btn-sm" (click)="delete()" [disabled]="deleting()">Delete</button>
+        } @else {
+          <button class="btn-primary btn-sm" (click)="saveEdit()" [disabled]="saving()">{{ saving() ? 'Saving…' : 'Save' }}</button>
+          <button class="btn-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
         }
-        <button class="btn-danger btn-sm" (click)="delete()" [disabled]="deleting()">Delete</button>
       </div>
     </div>
 
     @if (recipe()!.verification_status !== 'ok') {
-      <div class="alert-warning" style="margin-bottom:1rem">
-        <strong>⚠ Review needed:</strong> {{ recipe()!.verification_notes }}
+      <div class="alert-warning" style="margin-bottom:1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
+        <div><strong>⚠ Review needed:</strong> {{ recipe()!.verification_notes }}</div>
+        <button class="btn-secondary btn-sm" style="white-space:nowrap;flex-shrink:0" (click)="approve()">Approve</button>
       </div>
     }
 
@@ -37,31 +48,70 @@
       <section class="card">
         <div class="flex justify-between" style="margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
           <h2 class="section-title" style="margin:0">Ingredients</h2>
-          <div class="people-control">
-            <label>Servings:</label>
-            <button class="btn-secondary btn-sm" (click)="people.update(p => p > 1 ? p - 1 : 1)">−</button>
-            <span class="people-count">{{ people() }}</span>
-            <button class="btn-secondary btn-sm" (click)="people.update(p => p + 1)">+</button>
-          </div>
-        </div>
-        <ul class="ingredient-list">
-          @for (ing of scaledIngredients(); track ing.id) {
-            <li>
-              <span class="ing-qty">{{ ing.display }}</span>
-              <span class="ing-name">{{ ing.name }}</span>
-            </li>
+          @if (!editing()) {
+            <div class="people-control">
+              <label>Servings:</label>
+              <button class="btn-secondary btn-sm" (click)="people.update(p => p > 1 ? p - 1 : 1)">−</button>
+              <span class="people-count">{{ people() }}</span>
+              <button class="btn-secondary btn-sm" (click)="people.update(p => p + 1)">+</button>
+            </div>
           }
-        </ul>
+        </div>
+
+        @if (!editing()) {
+          <ul class="ingredient-list">
+            @for (ing of scaledIngredients(); track ing.id) {
+              <li>
+                <span class="ing-qty">{{ ing.display }}</span>
+                <span class="ing-name">{{ ing.name }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <div class="edit-ingredient-list">
+            @for (ing of draftIngredients(); track $index) {
+              <div class="edit-ingredient-row">
+                <input class="ing-edit-qty" type="number" min="0" step="any" placeholder="qty"
+                  [ngModel]="ing.quantity_per_person"
+                  (ngModelChange)="updateIngredient($index, 'quantity_per_person', $event)" />
+                <input class="ing-edit-unit" type="text" placeholder="unit"
+                  [ngModel]="ing.unit ?? ''"
+                  (ngModelChange)="updateIngredient($index, 'unit', $event)" />
+                <input class="ing-edit-name" type="text" placeholder="ingredient"
+                  [ngModel]="ing.name"
+                  (ngModelChange)="updateIngredient($index, 'name', $event)" />
+                <button class="btn-danger btn-sm" (click)="removeIngredient($index)">✕</button>
+              </div>
+            }
+            <button class="btn-secondary btn-sm" style="margin-top:.5rem" (click)="addIngredient()">+ Add ingredient</button>
+          </div>
+        }
       </section>
 
       <!-- Instructions -->
       <section class="card">
         <h2 class="section-title">Instructions</h2>
-        <ol class="step-list">
-          @for (step of recipe()!.steps; track step.step_number) {
-            <li>{{ step.text }}</li>
-          }
-        </ol>
+
+        @if (!editing()) {
+          <ol class="step-list">
+            @for (step of recipe()!.steps; track step.step_number) {
+              <li>{{ step.text }}</li>
+            }
+          </ol>
+        } @else {
+          <div class="edit-step-list">
+            @for (step of draftSteps(); track $index) {
+              <div class="edit-step-row">
+                <span class="step-num">{{ $index + 1 }}.</span>
+                <textarea class="step-edit-text" rows="2"
+                  [ngModel]="step"
+                  (ngModelChange)="updateStep($index, $event)"></textarea>
+                <button class="btn-danger btn-sm" (click)="removeStep($index)">✕</button>
+              </div>
+            }
+            <button class="btn-secondary btn-sm" style="margin-top:.5rem" (click)="addStep()">+ Add step</button>
+          </div>
+        }
       </section>
     </div>
   }
