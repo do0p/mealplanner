@@ -21,6 +21,8 @@ class ExtractedRecipe(BaseModel):
     notes: str | None = None
     raw_source_text: str | None = None
     course: str | None = None  # breakfast/appetizer/soup/salad/main/side/dessert/snack/beverage
+    is_vegetarian: bool = False
+    is_vegan: bool = False
     calories_total: float | None = None          # estimated total kcal for the whole recipe
     protein_total: float | None = None           # estimated total protein (g) for the whole recipe
     calories_per_serving_stated: float | None = None  # explicitly stated per-serving kcal from the text

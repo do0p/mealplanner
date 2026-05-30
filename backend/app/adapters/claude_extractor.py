@@ -56,6 +56,8 @@ _EXTRACT_TOOL = {
                         },
                         "steps": {"type": "array", "items": {"type": "string"}},
                         "notes": {"type": "string"},
+                        "is_vegetarian": {"type": "boolean"},
+                        "is_vegan": {"type": "boolean"},
                         "nutrition": {
                             "type": "object",
                             "properties": {
@@ -89,7 +91,10 @@ _IMAGE_SYSTEM_PROMPT = (
     "5. Estimate total calories (kcal) and protein (g) for the whole recipe "
     "as written (before dividing by servings). If the image explicitly states "
     "per-serving values, capture those in calories_per_serving and protein_g_per_serving.\n"
-    "6. Set page_numbers to [1] for all recipes."
+    "6. Set page_numbers to [1] for all recipes.\n"
+    "7. Set is_vegetarian=true if the recipe contains no meat or seafood. "
+    "Set is_vegan=true if it also contains no animal products "
+    "(no dairy, eggs, honey, or other animal-derived ingredients)."
 )
 
 _SYSTEM_PROMPT = (
@@ -106,7 +111,10 @@ _SYSTEM_PROMPT = (
     "5. Estimate total calories (kcal) and protein (g) for the whole recipe "
     "as written (before dividing by servings). If the text also explicitly states "
     "per-serving values, capture those in calories_per_serving and protein_g_per_serving.\n"
-    "6. page_numbers must reference the [Page N] markers in the source text."
+    "6. page_numbers must reference the [Page N] markers in the source text.\n"
+    "7. Set is_vegetarian=true if the recipe contains no meat or seafood. "
+    "Set is_vegan=true if it also contains no animal products "
+    "(no dairy, eggs, honey, or other animal-derived ingredients)."
 )
 
 
@@ -355,6 +363,8 @@ class ClaudeRecipeExtractor(RecipeExtractor):
                 title=data_item.get("title", "Untitled"),
                 base_servings=data_item.get("servings"),
                 course=data_item.get("course"),
+                is_vegetarian=bool(data_item.get("is_vegetarian", False)),
+                is_vegan=bool(data_item.get("is_vegan", False)),
                 calories_total=nutrition.get("calories"),
                 protein_total=nutrition.get("protein_g"),
                 calories_per_serving_stated=nutrition.get("calories_per_serving"),
@@ -455,6 +465,8 @@ class ClaudeRecipeExtractor(RecipeExtractor):
                 title=data.get("title", "Untitled"),
                 base_servings=data.get("servings"),
                 course=data.get("course"),
+                is_vegetarian=bool(data.get("is_vegetarian", False)),
+                is_vegan=bool(data.get("is_vegan", False)),
                 calories_total=nutrition.get("calories"),
                 protein_total=nutrition.get("protein_g"),
                 calories_per_serving_stated=nutrition.get("calories_per_serving"),

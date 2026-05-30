@@ -245,6 +245,8 @@ class ImportService:
                 else round(ext.protein_total / servings, 1) if ext.protein_total
                 else None
             ),
+            is_vegetarian=ext.is_vegetarian,
+            is_vegan=ext.is_vegan,
             source_pages=ext.source_pages,
             raw_source_text=ext.raw_source_text,
             import_job_id=job_id,
