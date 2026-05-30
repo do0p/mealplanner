@@ -1,57 +1,145 @@
-# Meal Planner
+# Mealplanner
 
-A personal meal-planning webapp. Upload recipe PDFs, browse your recipe library, plan a week of meals, and generate a scaled shopping list.
+A self-hosted meal-planning webapp. Upload recipe PDFs (or other formats in the future), browse your recipe library, plan a week of meals, and generate a scaled shopping list. Recipe text is extracted by an LLM — either a local Ollama model or the Anthropic Claude API.
+
+---
 
 ## Features
 
-- **PDF import** — upload recipe books; text is extracted and parsed by an LLM (Claude or Ollama)
-- **Recipe library** — browse, search, and filter recipes by course, calories, and protein
-- **Weekly planner** — drag recipes into a 7-day grid
-- **Shopping list** — auto-generated, scaled to your chosen serving count, grouped by category
+- **PDF import** — upload recipe books or single-recipe PDFs; the LLM segments and extracts each recipe automatically
+- **Recipe library** — browse and search your full collection in a responsive card grid
+- **Smart filters** — filter by course, dietary tags (vegetarian, vegan), calorie cap, protein target, favourites, and "want to try"; only filters with matching results are shown
+- **Fraction quantities** — ingredient amounts like 0.5 or 0.33 are displayed as ½, ⅓, ¾, etc.
+- **Serving scaler** — adjust the serving count on any recipe and all ingredient quantities update instantly
+- **Nutrition display** — kcal and protein per serving shown on the recipe detail page, scaled live
+- **Favourites & want-to-try** — bookmark recipes with ⭐ and 🔖 from both the grid and the detail page
+- **Edit mode** — correct titles, ingredients, steps, course, and dietary tags after import
+- **Weekly planner** — assign recipes to a 7×3 (day × meal-type) grid with per-slot serving counts
+- **Shopping list** — auto-generated from the active plan, aggregated by ingredient and grouped by category, with checkboxes and a print view
+- **Dark mode** — toggle between light and dark themes; preference is persisted in the browser
+- **Upload decoupling** — file upload is instant and LLM-free; processing runs as a background task when the LLM is reachable
+- **No cloud required** — runs entirely on your own hardware; LLM can be local via Ollama
 
-## Stack
-
-- **Backend** — FastAPI, Python 3.12, SQLite via SQLModel
-- **Frontend** — Angular 21, standalone components, signals
-- **LLM** — Anthropic Claude (default) or local Ollama model for recipe extraction
+---
 
 ## Quick start
 
+### With Docker Compose
+
 ```bash
-cp backend/.env.example backend/.env   # add your ANTHROPIC_API_KEY
-make install-venv                      # first-time only
-make install
-make dev                               # backend :8000, frontend :4200
+cp backend/.env.example backend/.env   # set LLM_PROVIDER + API key or Ollama URL
+docker compose up -d
+# Open http://localhost:8000
 ```
+
+### Development (hot-reload)
+
+Requires Python 3.12+ and Node.js 20+.
+
+```bash
+cp backend/.env.example backend/.env   # configure LLM
+make install-venv                      # first-time only (bootstraps pip)
+make install                           # install backend + frontend deps
+make dev                               # backend on :8000, frontend on :4200
+```
+
+---
 
 ## Configuration
 
-Backend is configured via `backend/.env` (see `backend/.env.example`):
+All backend settings are environment variables. Copy `backend/.env.example` and edit:
 
 | Variable | Default | Description |
-|---|---|---|
+|----------|---------|-------------|
 | `LLM_PROVIDER` | `anthropic` | `anthropic` or `ollama` |
-| `ANTHROPIC_API_KEY` | — | Required when using Anthropic |
-| `ANTHROPIC_MODEL` | `claude-haiku-4-5-20251001` | |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | |
-| `OLLAMA_MODEL` | `qwen3:4b` | |
-| `DATA_DIR` | `./data` | SQLite DB + uploaded files |
+| `ANTHROPIC_API_KEY` | — | Required when using Anthropic. Get one at [console.anthropic.com](https://console.anthropic.com). Note: Pro/Max subscriptions do not include API credits — prepaid credits are billed separately. |
+| `ANTHROPIC_MODEL` | `claude-haiku-4-5-20251001` | Any Claude model ID |
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama endpoint. Inside Docker use `http://host.docker.internal:11434` |
+| `OLLAMA_MODEL` | `qwen3:4b` | Any model pulled in Ollama |
+| `OLLAMA_TIMEOUT` | `600` | Seconds to wait for an Ollama response |
+| `DATA_DIR` | `./data` | Directory for the SQLite database and uploaded files |
 
-## Build & deploy
+> **Security:** The server has no built-in authentication. It is designed to run on a trusted local network. Do not expose it directly to the internet — if remote access is needed, place it behind a reverse proxy with authentication (e.g. Nginx, Caddy, Traefik).
 
-Copy `.env.make.example` and set your registry:
+---
+
+## Docker deployment
+
+Build and run a single container:
 
 ```bash
-cp .env.make.example .env.make   # set REGISTRY and IMAGE
-make deploy                       # build amd64 + push to registry
+docker build -t mealplanner .
+
+docker run -d \
+  --name mealplanner \
+  --restart unless-stopped \
+  -p 8000:8000 \
+  -v /path/to/data:/app/data \
+  -e LLM_PROVIDER=anthropic \
+  -e ANTHROPIC_API_KEY=sk-... \
+  mealplanner
+
+# Open http://localhost:8000
 ```
 
-## Commands
+Or use the provided `docker-compose.yml`:
+
+```bash
+cp backend/.env.example backend/.env   # edit to taste
+docker compose up -d
+```
+
+To push to your own registry, copy `.env.make.example` → `.env.make` and set `REGISTRY` and `IMAGE`, then:
+
+```bash
+make deploy    # multi-platform build + push
+```
+
+---
+
+## How it works
+
+### Import pipeline
+
+1. **Upload** — file is stored and a `pending` import job is created (no LLM contact)
+2. **Process** — triggered manually or automatically; the LLM segments the text into individual recipes, extracts structured data (title, ingredients with quantities and units, steps, course, dietary flags), and normalises units to metric
+3. **Review** — extracted recipes are shown as drafts; accept all or pick individual ones
+
+### Ingredient storage and scaling
+
+Ingredients are stored **per person** (`book_quantity ÷ book_servings`). Scaling to N servings = `quantity_per_person × N`. Metric units (g, ml) are rounded to the nearest 5; culinary units (cup, tbsp, tsp) are rendered as fractions where appropriate.
+
+### Shopping list aggregation
+
+`build_shopping_list()` scales all plan entries, converts units to metric, aggregates by normalised ingredient name and unit, and groups by category. No LLM is involved at serving time — everything is deterministic.
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|-------|------------|
+| Backend | FastAPI, Python 3.12, SQLite via SQLModel |
+| Frontend | Angular 21, standalone components, signals |
+| LLM (import only) | Anthropic Claude API or local Ollama |
+| Container | Docker (multi-stage, slim Python base) |
+
+---
+
+## Make targets
 
 ```
-make dev             # start dev servers
-make test            # run all tests
-make build           # build Docker image
-make deploy          # build + push to registry
-make release         # tag + deploy
+make install-venv    Bootstrap Python venv (first-time setup)
+make install         Install backend + frontend dependencies
+make dev             Start backend (:8000) + frontend (:4200) dev servers
+make test            Run all tests (pytest + Vitest)
+make build           Build Angular + Docker image
+make deploy          Multi-platform build + push to registry
+make release         Git tag + deploy
 ```
+
+---
+
+## License
+
+Apache 2.0 — see [LICENSE](LICENSE).
