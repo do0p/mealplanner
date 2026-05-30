@@ -36,6 +36,9 @@
         ≤ {{ LOW_CALORIE_KCAL }} kcal
       </button>
       <button class="chip" [class.active]="sortAz()" (click)="sortAz.set(!sortAz())">A–Z</button>
+      @if (hasReviewRecipes()) {
+        <button class="chip chip-review" [class.active]="needsReview()" (click)="needsReview.set(!needsReview())">⚠ Review required</button>
+      }
     </div>
     @if (hasFilters()) {
       <button class="clear-filters" (click)="clearFilters()">✕ Clear filters</button>

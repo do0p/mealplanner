@@ -26,6 +26,7 @@ export class RecipesPage implements OnInit {
   vegan = signal(false);
   favourites = signal(false);
   sortAz = signal(false);
+  needsReview = signal(false);
   loading = signal(true);
 
   courses = computed(() => {
@@ -36,6 +37,10 @@ export class RecipesPage implements OnInit {
     return [...seen].sort();
   });
 
+  hasReviewRecipes = computed(() =>
+    this.recipes().some(r => r.verification_status !== 'ok')
+  );
+
   hasFilters = computed(() =>
     this.query() !== '' ||
     this.selectedCourse() !== null ||
@@ -43,7 +48,8 @@ export class RecipesPage implements OnInit {
     this.lowCalorie() ||
     this.vegetarian() ||
     this.vegan() ||
-    this.favourites()
+    this.favourites() ||
+    this.needsReview()
   );
 
   filtered = computed(() => {
@@ -54,6 +60,7 @@ export class RecipesPage implements OnInit {
     const veg = this.vegetarian();
     const vgn = this.vegan();
     const fav = this.favourites();
+    const rev = this.needsReview();
     let result = this.recipes().filter(r =>
       r.title.toLowerCase().includes(q) &&
       (course === null || r.course === course) &&
@@ -61,7 +68,8 @@ export class RecipesPage implements OnInit {
       (!lc  || (r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL)) &&
       (!veg || r.is_vegetarian) &&
       (!vgn || r.is_vegan) &&
-      (!fav || r.is_favourite)
+      (!fav || r.is_favourite) &&
+      (!rev || r.verification_status !== 'ok')
     );
     if (this.sortAz()) {
       result = [...result].sort((a, b) => a.title.localeCompare(b.title));
@@ -88,6 +96,7 @@ export class RecipesPage implements OnInit {
     this.vegetarian.set(false);
     this.vegan.set(false);
     this.favourites.set(false);
+    this.needsReview.set(false);
   }
 
   toggleFavourite(event: Event, r: RecipeSummary) {

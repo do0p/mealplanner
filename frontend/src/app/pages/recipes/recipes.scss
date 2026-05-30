@@ -100,6 +100,14 @@
   margin-top: -.25rem;
 }
 
+.chip-review {
+  &.active {
+    background: #fef3c7;
+    border-color: #fcd34d;
+    color: #92400e;
+  }
+}
+
 .clear-filters {
   background: none;
   border: 1px solid var(--color-border);
