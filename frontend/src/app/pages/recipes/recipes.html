@@ -21,16 +21,28 @@
       </div>
     }
     <div class="chips">
-      <button class="chip" [class.active]="favourites()" (click)="favourites.set(!favourites())">⭐ Favourites</button>
-      <button class="chip" [class.active]="wantToTry()" (click)="wantToTry.set(!wantToTry())">🔖 Want to try</button>
-      <button class="chip" [class.active]="vegetarian()" (click)="vegetarian.set(!vegetarian())">🌱 Vegetarian</button>
-      <button class="chip" [class.active]="vegan()" (click)="vegan.set(!vegan())">🌿 Vegan</button>
-      <button class="chip" [class.active]="highProtein()" (click)="highProtein.set(!highProtein())">
-        ≥ {{ HIGH_PROTEIN_G }}g protein
-      </button>
-      <button class="chip" [class.active]="lowCalorie()" (click)="lowCalorie.set(!lowCalorie())">
-        ≤ {{ LOW_CALORIE_KCAL }} kcal
-      </button>
+      @if (canFilterFavourites()) {
+        <button class="chip" [class.active]="favourites()" (click)="favourites.set(!favourites())">⭐ Favourites</button>
+      }
+      @if (canFilterWantToTry()) {
+        <button class="chip" [class.active]="wantToTry()" (click)="wantToTry.set(!wantToTry())">🔖 Want to try</button>
+      }
+      @if (canFilterVegetarian()) {
+        <button class="chip" [class.active]="vegetarian()" (click)="vegetarian.set(!vegetarian())">🌱 Vegetarian</button>
+      }
+      @if (canFilterVegan()) {
+        <button class="chip" [class.active]="vegan()" (click)="vegan.set(!vegan())">🌿 Vegan</button>
+      }
+      @if (canFilterHighProtein()) {
+        <button class="chip" [class.active]="highProtein()" (click)="highProtein.set(!highProtein())">
+          ≥ {{ HIGH_PROTEIN_G }}g protein
+        </button>
+      }
+      @if (canFilterLowCalorie()) {
+        <button class="chip" [class.active]="lowCalorie()" (click)="lowCalorie.set(!lowCalorie())">
+          ≤ {{ LOW_CALORIE_KCAL }} kcal
+        </button>
+      }
       <button class="chip" [class.active]="sortAz()" (click)="sortAz.set(!sortAz())">A–Z</button>
     </div>
     @if (hasFilters()) {

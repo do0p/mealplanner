@@ -33,11 +33,36 @@ export class RecipesPage implements OnInit {
   wantToTry = this.filterSvc.wantToTry;
   sortAz = this.filterSvc.sortAz;
 
+  // Recipes matching all active filters except the course constraint —
+  // used to determine which course chips are still reachable.
+  private withoutCourse = computed(() => {
+    const q = this.query().toLowerCase();
+    const hp = this.highProtein();
+    const lc = this.lowCalorie();
+    const veg = this.vegetarian();
+    const vgn = this.vegan();
+    const fav = this.favourites();
+    const wtt = this.wantToTry();
+    return this.recipes().filter(r =>
+      r.title.toLowerCase().includes(q) &&
+      (!hp  || (r.protein_per_person != null && r.protein_per_person >= this.HIGH_PROTEIN_G)) &&
+      (!lc  || (r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL)) &&
+      (!veg || r.is_vegetarian) &&
+      (!vgn || r.is_vegan) &&
+      (!fav || r.is_favourite) &&
+      (!wtt || r.is_want_to_try)
+    );
+  });
+
+  // Course chips: only courses reachable from the current filter state,
+  // plus the selected course so it can always be deactivated.
   courses = computed(() => {
+    const sel = this.selectedCourse();
     const seen = new Set<string>();
-    for (const r of this.recipes()) {
+    for (const r of this.withoutCourse()) {
       if (r.course) seen.add(r.course);
     }
+    if (sel) seen.add(sel);
     return [...seen].sort();
   });
 
@@ -76,6 +101,29 @@ export class RecipesPage implements OnInit {
     }
     return result;
   });
+
+  // Boolean chip visibility: active filters always stay visible;
+  // inactive ones only appear when they would match ≥1 recipe in the current result.
+  canFilterFavourites = computed(() =>
+    this.favourites() || this.filtered().some(r => r.is_favourite)
+  );
+  canFilterWantToTry = computed(() =>
+    this.wantToTry() || this.filtered().some(r => r.is_want_to_try)
+  );
+  canFilterVegetarian = computed(() =>
+    this.vegetarian() || this.filtered().some(r => r.is_vegetarian)
+  );
+  canFilterVegan = computed(() =>
+    this.vegan() || this.filtered().some(r => r.is_vegan)
+  );
+  canFilterHighProtein = computed(() =>
+    this.highProtein() || this.filtered().some(r =>
+      r.protein_per_person != null && r.protein_per_person >= this.HIGH_PROTEIN_G)
+  );
+  canFilterLowCalorie = computed(() =>
+    this.lowCalorie() || this.filtered().some(r =>
+      r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL)
+  );
 
   ngOnInit() {
     this.api.getRecipes('accepted').subscribe({
