@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 const DEFAULT_TZ = 'Europe/Vienna';
 
@@ -61,6 +61,24 @@ function makeFmt(tz: string): Intl.DateTimeFormat {
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
   private _fmt = makeFmt(DEFAULT_TZ);
+
+  private readonly DARK_KEY = 'darkMode';
+  darkMode = signal(localStorage.getItem(this.DARK_KEY) === 'true');
+
+  constructor() {
+    this._applyTheme(this.darkMode());
+  }
+
+  toggleDarkMode(): void {
+    const next = !this.darkMode();
+    this.darkMode.set(next);
+    localStorage.setItem(this.DARK_KEY, String(next));
+    this._applyTheme(next);
+  }
+
+  private _applyTheme(dark: boolean): void {
+    document.documentElement.dataset['theme'] = dark ? 'dark' : '';
+  }
 
   setTimezone(tz: string): void {
     this._fmt = makeFmt(tz);

@@ -130,6 +130,25 @@
   .step-edit-text { flex: 1; resize: vertical; }
 }
 
+.nutrition-row {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: .75rem;
+  flex-wrap: wrap;
+}
+
+.nutrition-item {
+  font-weight: 600;
+  font-size: .9rem;
+  color: var(--color-text);
+}
+
+.nutrition-label {
+  font-size: .8rem;
+  color: var(--color-text-muted);
+}
+
 .diet-tags {
   display: flex;
   gap: .5rem;

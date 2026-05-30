@@ -14,7 +14,7 @@ import { ToastService } from './toast.service';
 export class App implements OnInit {
   version = APP_VERSION;
   private api = inject(ApiService);
-  private settings = inject(SettingsService);
+  settings = inject(SettingsService);
   toast = inject(ToastService);
 
   ngOnInit(): void {

@@ -1,4 +1,5 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
@@ -16,7 +17,7 @@ interface IngredientDraft {
 
 @Component({
   selector: 'app-recipe-detail',
-  imports: [FormsModule, RouterLink],
+  imports: [DecimalPipe, FormsModule, RouterLink],
   templateUrl: './recipe-detail.html',
   styleUrl: './recipe-detail.scss',
 })
@@ -56,6 +57,16 @@ export class RecipeDetailPage implements OnInit {
   sourceUrl = computed(() => {
     const r = this.recipe();
     return r ? this.api.recipeSourceUrl(r.id) : '';
+  });
+
+  scaledNutrition = computed(() => {
+    const r = this.recipe();
+    const n = this.people();
+    if (!r) return null;
+    const cal = r.calories_per_person != null ? r.calories_per_person * n : null;
+    const prot = r.protein_per_person != null ? r.protein_per_person * n : null;
+    if (cal == null && prot == null) return null;
+    return { cal, prot };
   });
 
   ngOnInit() {

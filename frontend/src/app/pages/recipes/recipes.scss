@@ -40,7 +40,7 @@
 }
 
 .course-chip {
-  background: #f1f5f9;
+  background: var(--color-bg);
   color: var(--color-text-muted);
   padding: .1rem .5rem;
   border-radius: 999px;

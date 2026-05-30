@@ -3,7 +3,7 @@
   align-items: center;
   gap: 1.5rem;
   padding: .75rem 1.5rem;
-  background: #1e293b;
+  background: var(--color-nav-bg);
   color: #f8fafc;
   box-shadow: 0 2px 4px rgba(0,0,0,.2);
   position: sticky;
@@ -56,6 +56,20 @@
   }
 }
 
+.theme-toggle {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  padding: .2rem .35rem;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1;
+  opacity: .75;
+  transition: opacity .15s, background .15s;
+
+  &:hover { opacity: 1; background: rgba(255,255,255,.1); }
+}
+
 .toast-container {
   position: fixed;
   bottom: 1.5rem;
@@ -93,5 +107,5 @@
   gap: .5rem;
   padding: 1rem;
   font-size: .75rem;
-  color: #475569;
+  color: var(--color-text-muted);
 }

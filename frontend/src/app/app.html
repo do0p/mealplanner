@@ -6,6 +6,9 @@
   </div>
   <div class="nav-right">
     <a routerLink="/import" routerLinkActive="active">Import</a>
+    <button class="theme-toggle" (click)="settings.toggleDarkMode()" [title]="settings.darkMode() ? 'Switch to light mode' : 'Switch to dark mode'">
+      {{ settings.darkMode() ? '☀️' : '🌙' }}
+    </button>
   </div>
 </nav>
 

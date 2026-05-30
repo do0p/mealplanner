@@ -28,7 +28,7 @@
       transition: background .1s;
       font-size: .875rem;
       &:hover { background: var(--color-bg); }
-      &.active { background: #eff6ff; color: var(--color-primary); font-weight: 600; }
+      &.active { background: var(--color-primary-subtle); color: var(--color-primary); font-weight: 600; }
     }
   }
 }
@@ -126,7 +126,7 @@
   &:hover {
     border-color: var(--color-primary);
     color: var(--color-primary);
-    background: #eff6ff;
+    background: var(--color-primary-subtle);
   }
 }
 
@@ -195,7 +195,7 @@
 
 .picker-course {
   font-size: .75rem;
-  background: #f1f5f9;
+  background: var(--color-bg);
   color: var(--color-text-muted);
   padding: .1rem .45rem;
   border-radius: 999px;
