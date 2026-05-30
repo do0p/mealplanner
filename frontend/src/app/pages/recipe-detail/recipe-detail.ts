@@ -141,6 +141,20 @@ export class RecipeDetailPage implements OnInit {
     this.draftSteps.update(list => list.map((s, idx) => idx === i ? value : s));
   }
 
+  toggleFavourite() {
+    const r = this.recipe()!;
+    const next = !r.is_favourite;
+    this.recipe.update(cur => cur ? { ...cur, is_favourite: next } : cur);
+    this.api.updateRecipe(r.id, { is_favourite: next }).subscribe();
+  }
+
+  toggleWantToTry() {
+    const r = this.recipe()!;
+    const next = !r.is_want_to_try;
+    this.recipe.update(cur => cur ? { ...cur, is_want_to_try: next } : cur);
+    this.api.updateRecipe(r.id, { is_want_to_try: next }).subscribe();
+  }
+
   delete() {
     const r = this.recipe();
     if (!r || !confirm(`Delete "${r.title}"?`)) return;
