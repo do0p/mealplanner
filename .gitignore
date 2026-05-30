@@ -11,3 +11,4 @@ dist
 .angular
 *.pyc
 ollama
+.env.make

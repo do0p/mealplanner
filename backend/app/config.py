@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     # without it; only new imports are blocked while it is unreachable.
     llm_provider: str = "anthropic"  # "ollama" or "anthropic"
 
-    ollama_base_url: str = "http://172.17.176.1:11434"
+    ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "qwen3:4b"
     ollama_timeout: float = 600.0
     ollama_num_ctx: int = 8192

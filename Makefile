@@ -1,4 +1,8 @@
 VERSION := $(shell cat VERSION)
+REGISTRY ?= localhost:5000
+IMAGE ?= mealplanner
+
+-include .env.make
 
 .PHONY: help install install-venv dev dev-backend dev-frontend test test-backend test-frontend build build-frontend build-backend deploy release clean
 
@@ -52,13 +56,13 @@ build-frontend:
 	cd frontend && npm run build
 
 build-backend:
-	docker build -t dominik/mealplanner:$(VERSION) -t dominik/mealplanner:latest .
+	docker build -t $(IMAGE):$(VERSION) -t $(IMAGE):latest .
 
 deploy:
 	docker buildx build --platform linux/amd64,linux/arm64 \
-		-t cloud7:5050/dominik/mealplanner:$(VERSION) \
-		-t cloud7:5050/dominik/mealplanner:latest \
-		--push .
+		--output "type=image,name=$(REGISTRY)/$(IMAGE):$(VERSION),push=true,registry.insecure=true" .
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		--output "type=image,name=$(REGISTRY)/$(IMAGE):latest,push=true,registry.insecure=true" .
 
 release:
 	git tag v$(VERSION)
@@ -68,4 +72,4 @@ release:
 clean:
 	cd backend && rm -rf .pytest_cache __pycache__ frontend-dist data
 	cd frontend && rm -rf dist node_modules .angular
-	docker image rm dominik/mealplanner 2>/dev/null || true
+	docker image rm $(IMAGE) 2>/dev/null || true
