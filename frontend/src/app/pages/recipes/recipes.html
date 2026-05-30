@@ -1,0 +1,75 @@
+<div class="page">
+  <div class="flex justify-between" style="margin-bottom:1.25rem">
+    <h1 class="page-title" style="margin:0">Recipes</h1>
+    <a routerLink="/import" class="btn-primary" style="display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1rem;border-radius:8px;background:var(--color-primary);color:#fff;font-weight:500;font-size:.875rem">
+      + Import
+    </a>
+  </div>
+
+  <div class="search-filter-row">
+    <input
+      type="search"
+      placeholder="Search recipes…"
+      [ngModel]="query()"
+      (ngModelChange)="query.set($event)"
+      style="max-width:360px"
+    />
+    @if (courses().length > 0) {
+      <div class="chips">
+        @for (c of courses(); track c) {
+          <button
+            class="chip"
+            [class.active]="selectedCourse() === c"
+            (click)="toggleCourse(c)"
+          >{{ c }}</button>
+        }
+      </div>
+    }
+    <div class="chips">
+      <button class="chip" [class.active]="highProtein()" (click)="highProtein.set(!highProtein())">
+        ≥ {{ HIGH_PROTEIN_G }}g protein
+      </button>
+      <button class="chip" [class.active]="lowCalorie()" (click)="lowCalorie.set(!lowCalorie())">
+        ≤ {{ LOW_CALORIE_KCAL }} kcal
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="text-muted">Loading…</p>
+  } @else if (filtered().length === 0) {
+    <div class="empty-state">
+      <p>No recipes yet.</p>
+      <p class="text-muted mt-1">Upload a PDF on the <a routerLink="/import">Import</a> page to get started.</p>
+    </div>
+  } @else {
+    <div class="recipe-grid">
+      @for (r of filtered(); track r.id) {
+        <a class="recipe-card" [routerLink]="['/recipes', r.id]">
+          <div class="recipe-card-title">{{ r.title }}</div>
+          <div class="recipe-card-meta">
+            @if (r.course) {
+              <span class="course-chip">{{ r.course }}</span>
+            }
+            @if (r.base_servings) {
+              <span class="text-muted">Serves {{ r.base_servings }}</span>
+            }
+          </div>
+          @if (r.calories_per_person != null || r.protein_per_person != null) {
+            <div class="recipe-card-nutrition">
+              @if (r.calories_per_person != null) {
+                <span>{{ r.calories_per_person | number:'1.0-0' }} kcal</span>
+              }
+              @if (r.protein_per_person != null) {
+                <span>{{ r.protein_per_person | number:'1.0-0' }}g protein</span>
+              }
+            </div>
+          }
+          @if (r.verification_status !== 'ok') {
+            <span class="badge {{ r.verification_status }}" style="margin-top:.5rem">{{ r.verification_status }}</span>
+          }
+        </a>
+      }
+    </div>
+  }
+</div>

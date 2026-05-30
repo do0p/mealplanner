@@ -1,0 +1,13 @@
+.venv
+__pycache__
+.pytest_cache
+.env
+data
+frontend-dist
+backend/frontend-dist
+frontend/src/app/version.ts
+node_modules
+dist
+.angular
+*.pyc
+ollama

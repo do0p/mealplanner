@@ -1,0 +1,46 @@
+from abc import ABC, abstractmethod
+from collections.abc import Callable
+
+from pydantic import BaseModel
+
+
+class ExtractedIngredient(BaseModel):
+    name: str
+    quantity: float | None = None  # book quantity (before per-person normalization)
+    unit: str | None = None
+    category: str | None = None
+    raw_text: str | None = None
+
+
+class ExtractedRecipe(BaseModel):
+    title: str
+    base_servings: int | None = None
+    ingredients: list[ExtractedIngredient] = []
+    steps: list[str] = []  # instruction text, verbatim
+    source_pages: str | None = None
+    notes: str | None = None
+    raw_source_text: str | None = None
+    course: str | None = None  # breakfast/appetizer/soup/salad/main/side/dessert/snack/beverage
+    calories_total: float | None = None   # estimated total kcal for the whole recipe
+    protein_total: float | None = None    # estimated total protein (g) for the whole recipe
+    verification_status: str = "ok"
+    verification_notes: str | None = None
+
+
+class RecipeExtractor(ABC):
+
+    @abstractmethod
+    def is_available(self) -> bool:
+        """Probe the underlying service. Must not raise; return False if unreachable."""
+        ...
+
+    @abstractmethod
+    def extract_recipes(
+        self,
+        segments: list[tuple[int, str]],
+        on_progress: Callable[[str, int, int], None] | None = None,
+    ) -> list[ExtractedRecipe]:
+        """Given (page_number, text) segments from one document, return all
+        recipes found — one item for a single-recipe doc, many for a cookbook.
+        on_progress(phase, current, total) is called at each phase transition."""
+        ...

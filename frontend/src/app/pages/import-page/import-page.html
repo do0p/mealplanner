@@ -1,0 +1,164 @@
+<div class="page">
+  <h1 class="page-title">Import Recipes</h1>
+
+  <!-- LLM Status -->
+  <div class="llm-status" [class.available]="llm()?.available" [class.unavailable]="llm() && !llm()!.available">
+    @if (!llm()) {
+      <span class="dot"></span> Checking LLM…
+    } @else if (llm()!.available) {
+      <span class="dot"></span> LLM ready · {{ llm()!.provider }} · {{ llm()!.model }}
+    } @else {
+      <span class="dot"></span> LLM unavailable · {{ llm()!.provider }}@if (llm()!.provider !== 'anthropic') { · {{ llm()!.base_url }}}
+    }
+  </div>
+
+  <!-- Drop zone -->
+  <div
+    class="drop-zone"
+    [class.drag-over]="dragOver()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+  >
+    <div class="drop-icon">📄</div>
+    <p>Drag &amp; drop PDF files here, or</p>
+    <label class="btn-primary" style="cursor:pointer;display:inline-block;margin-top:.5rem">
+      Browse files
+      <input type="file" accept=".pdf" multiple (change)="onFileChange($event)" style="display:none" />
+    </label>
+    <p class="text-muted" style="margin-top:.5rem;font-size:.8rem">
+      Uploads are queued immediately — processing happens when you click "Process".
+    </p>
+    @if (uploading()) {
+      <p class="text-muted mt-1">Uploading…</p>
+    }
+    @if (uploadError()) {
+      <p class="error-text mt-1">{{ uploadError() }}</p>
+    }
+  </div>
+
+  <!-- Actions -->
+  <div class="flex gap-1 mt-2">
+    <button
+      class="btn-primary"
+      (click)="processAll()"
+      [disabled]="processing() || !llm()?.available || !hasPending()"
+    >
+      @if (processing()) { Processing… } @else { Process pending }
+    </button>
+    @if (!llm()?.available) {
+      <span class="text-muted" style="font-size:.8rem;line-height:2">Start Ollama to enable processing</span>
+    }
+  </div>
+
+  <!-- Active queue: pending + processing -->
+  @if (activeJobs().length > 0) {
+    <div class="mt-3">
+      <h2 class="section-title">Import Queue</h2>
+      <div class="job-list">
+        @for (job of activeJobs(); track job.id) {
+          <ng-container *ngTemplateOutlet="jobCard; context: { job: job }"></ng-container>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Processed: completed + failed, collapsed by default -->
+  @if (processedJobs().length > 0) {
+    <div class="mt-3">
+      <div class="section-toggle" (click)="processedExpanded.set(!processedExpanded())">
+        <h2 class="section-title" style="margin:0">Processed ({{ processedJobs().length }})</h2>
+        <span class="expand-icon">{{ processedExpanded() ? '▲' : '▼' }}</span>
+      </div>
+      @if (processedExpanded()) {
+        <div class="job-list mt-2">
+          @for (job of processedJobs(); track job.id) {
+            <ng-container *ngTemplateOutlet="jobCard; context: { job: job }"></ng-container>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Reusable job card template -->
+<ng-template #jobCard let-job="job">
+  <div class="job-item card">
+    <div class="job-header" (click)="expandJob(job.id)">
+      <div>
+        <span class="job-filename">{{ job.filename }}</span>
+        <span class="text-muted" style="font-size:.8rem;margin-left:.5rem">{{ formatDate(job.created_at) }}</span>
+      </div>
+      <div class="flex gap-1">
+        <span class="badge {{ job.status }}">{{ job.status }}</span>
+        @if (job.recipe_count > 0) {
+          <span class="text-muted" style="font-size:.8rem">{{ job.recipe_count }} recipe(s)</span>
+        }
+        @if (job.status === 'completed' || job.status === 'failed') {
+          <button
+            class="btn-danger btn-sm"
+            (click)="$event.stopPropagation(); deleteJob(job)"
+          >Remove</button>
+        }
+      </div>
+      <span class="expand-icon">{{ expandedJob() === job.id ? '▲' : '▼' }}</span>
+    </div>
+
+    @if (job.status === 'processing') {
+      <div class="phases mt-1">
+        @for (phase of PHASES; track phase) {
+          <div class="phase-row" [class]="phaseStatus(job, phase)">
+            <span class="phase-label">{{ phase }}</span>
+            <div class="phase-track">
+              <div class="phase-fill" [style.width.%]="phaseProgress(job, phase)"></div>
+            </div>
+            <span class="phase-count">{{ phaseCountLabel(job, phase) }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (job.error) {
+      <div class="flex gap-1 mt-1" style="align-items:flex-start">
+        <p class="error-text" style="font-size:.8rem;margin:0;flex:1">{{ job.error }}</p>
+        @if (job.status === 'failed') {
+          <button
+            class="btn-secondary btn-sm"
+            [disabled]="retrying() === job.id || !llm()?.available"
+            (click)="retry(job.id)"
+          >{{ retrying() === job.id ? 'Retrying…' : 'Retry' }}</button>
+        }
+      </div>
+    }
+
+    @if (expandedJob() === job.id && job.recipes) {
+      <div class="recipe-list mt-2">
+        @if (job.status === 'completed' && job.recipes.length > 0) {
+          <div class="flex justify-between" style="margin-bottom:.5rem">
+            <span class="text-muted" style="font-size:.875rem">Extracted recipes:</span>
+            <button class="btn-primary btn-sm" (click)="acceptAll(job.id)">Accept all</button>
+          </div>
+        }
+        @for (r of job.recipes; track r.id) {
+          <div class="recipe-row">
+            <div>
+              <span class="recipe-title">{{ r.title }}</span>
+              @if (r.base_servings) {
+                <span class="text-muted" style="font-size:.8rem;margin-left:.4rem">serves {{ r.base_servings }}</span>
+              }
+              @if (r.verification_status !== 'ok') {
+                <span class="badge {{ r.verification_status }}" style="margin-left:.5rem">{{ r.verification_status }}</span>
+              }
+            </div>
+            <div class="flex gap-1">
+              <span class="badge {{ r.status }}">{{ r.status }}</span>
+              @if (r.status === 'draft') {
+                <button class="btn-secondary btn-sm" (click)="acceptOne(job.id, r.id)">Accept</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</ng-template>

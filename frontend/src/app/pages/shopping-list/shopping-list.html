@@ -1,0 +1,36 @@
+<div class="page">
+  <div class="flex justify-between" style="margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem">
+    <div>
+      <a [routerLink]="['/planner']" class="text-muted" style="font-size:.85rem">← Back to planner</a>
+      <h1 class="page-title" style="margin:.25rem 0 0">Shopping List</h1>
+    </div>
+    <button class="btn-secondary" (click)="print()">🖨 Print</button>
+  </div>
+
+  @if (loading()) {
+    <p class="text-muted">Loading…</p>
+  } @else if (!sl() || sl()!.categories.length === 0) {
+    <div class="empty-state">No ingredients — add recipes to your plan first.</div>
+  } @else {
+    <div class="categories">
+      @for (cat of sl()!.categories; track cat.category) {
+        <section class="card category">
+          <h2 class="category-title">{{ cat.category }}</h2>
+          <ul class="item-list">
+            @for (item of cat.items; track item.name) {
+              @let key = itemKey(cat.category, item.name);
+              <li [class.done]="isChecked(key)" (click)="toggle(key)">
+                <span class="checkbox">{{ isChecked(key) ? '☑' : '☐' }}</span>
+                <span class="item-amount">{{ item.display }}</span>
+                <span class="item-name">{{ item.name }}</span>
+                @if (item.from_recipes.length > 1) {
+                  <span class="item-sources">({{ item.from_recipes.join(', ') }})</span>
+                }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    </div>
+  }
+</div>

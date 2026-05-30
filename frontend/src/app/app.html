@@ -1,0 +1,13 @@
+<nav class="nav">
+  <a class="nav-brand" routerLink="/recipes">🍽 Mealplanner</a>
+  <div class="nav-links">
+    <a routerLink="/recipes" routerLinkActive="active">Recipes</a>
+    <a routerLink="/import" routerLinkActive="active">Import</a>
+    <a routerLink="/planner" routerLinkActive="active">Planner</a>
+  </div>
+  <span class="nav-version">v{{ version }}</span>
+</nav>
+
+<main>
+  <router-outlet />
+</main>

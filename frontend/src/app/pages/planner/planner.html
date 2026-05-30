@@ -1,0 +1,113 @@
+<div class="page">
+  <h1 class="page-title">Meal Planner</h1>
+
+  <div class="planner-layout">
+    <!-- Sidebar: plan list + create -->
+    <aside class="plan-sidebar card">
+      <h2 class="section-title">Plans</h2>
+
+      <div class="create-plan">
+        <input type="text" placeholder="New plan name…"
+          [ngModel]="newPlanName()" (ngModelChange)="newPlanName.set($event)"
+          (keyup.enter)="createPlan()"
+        />
+        <button class="btn-primary btn-sm" (click)="createPlan()" [disabled]="!newPlanName().trim() || creatingPlan()">
+          Add
+        </button>
+      </div>
+
+      <ul class="plan-list">
+        @for (p of plans(); track p.id) {
+          <li [class.active]="selectedPlan()?.id === p.id" (click)="selectPlan(p.id)">
+            <span>{{ p.name }}</span>
+            <span class="text-muted" style="font-size:.75rem">{{ p.entry_count }} meals</span>
+          </li>
+        }
+        @if (plans().length === 0) {
+          <li class="text-muted" style="font-size:.85rem">No plans yet</li>
+        }
+      </ul>
+    </aside>
+
+    <!-- Main: weekly grid -->
+    <div class="plan-main">
+      @if (!selectedPlan()) {
+        <div class="empty-state">Select or create a plan to start planning.</div>
+      } @else {
+        <div class="flex justify-between" style="margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+          <h2 style="font-size:1.1rem;font-weight:600">{{ selectedPlan()!.name }}</h2>
+          <div class="flex gap-1">
+            @if (saving()) { <span class="text-muted" style="font-size:.8rem;line-height:2">Saving…</span> }
+            <button class="btn-primary btn-sm" (click)="viewShoppingList()">Shopping list</button>
+            <button class="btn-danger btn-sm" (click)="deletePlan()">Delete plan</button>
+          </div>
+        </div>
+
+        <div class="week-grid">
+          <!-- Header row -->
+          <div class="grid-header"></div>
+          @for (meal of meals; track meal) {
+            <div class="grid-header">{{ meal }}</div>
+          }
+
+          <!-- Day rows -->
+          @for (day of days; track day) {
+            <div class="day-label">{{ day }}</div>
+            @for (meal of meals; track meal) {
+              @let entry = entryMap()[day + '-' + meal];
+              <div class="grid-cell" [class.filled]="!!entry">
+                @if (entry) {
+                  <div class="cell-content">
+                    <div class="cell-title">{{ entry.recipe_title }}</div>
+                    <div class="cell-controls">
+                      <button class="btn-secondary btn-sm" (click)="updatePeople(day, meal, entry.people - 1)">−</button>
+                      <span class="cell-people">{{ entry.people }}p</span>
+                      <button class="btn-secondary btn-sm" (click)="updatePeople(day, meal, entry.people + 1)">+</button>
+                      <button class="btn-danger btn-sm" (click)="clearSlot(day, meal)" title="Remove">✕</button>
+                    </div>
+                  </div>
+                } @else {
+                  <button class="add-btn" (click)="openPicker(day, meal)">+</button>
+                }
+              </div>
+            }
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Recipe picker overlay -->
+@if (pickerSlot()) {
+  <div class="overlay" (click)="closePicker()">
+    <div class="picker-panel card" (click)="$event.stopPropagation()">
+      <div class="flex justify-between" style="margin-bottom:.75rem">
+        <h3 style="font-size:1rem;font-weight:600">Pick a recipe for {{ pickerSlot() }}</h3>
+        <button class="btn-secondary btn-sm" (click)="closePicker()">✕</button>
+      </div>
+      <div class="flex gap-1" style="margin-bottom:.75rem;align-items:center">
+        <label style="font-size:.875rem;white-space:nowrap">People:</label>
+        <button class="btn-secondary btn-sm" (click)="pickerPeople.update(p => p > 1 ? p - 1 : 1)">−</button>
+        <span style="min-width:1.5rem;text-align:center;font-weight:600">{{ pickerPeople() }}</span>
+        <button class="btn-secondary btn-sm" (click)="pickerPeople.update(p => p + 1)">+</button>
+      </div>
+      <input type="search" placeholder="Search recipes…"
+        [ngModel]="pickerQuery()" (ngModelChange)="pickerQuery.set($event)"
+        style="margin-bottom:.75rem"
+      />
+      <ul class="picker-list">
+        @for (r of pickerResults(); track r.id) {
+          <li (click)="pickRecipe(r)">{{ r.title }}
+            @if (r.base_servings) {
+              <span class="text-muted"> · serves {{ r.base_servings }}</span>
+            }
+          </li>
+        }
+        @if (pickerResults().length === 0) {
+          <li class="text-muted">No recipes found</li>
+        }
+      </ul>
+    </div>
+  </div>
+}

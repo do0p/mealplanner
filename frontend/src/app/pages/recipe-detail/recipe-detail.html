@@ -1,0 +1,68 @@
+<div class="page">
+  @if (loading()) {
+    <p class="text-muted">Loading…</p>
+  } @else if (!recipe()) {
+    <p class="text-muted">Recipe not found.</p>
+  } @else {
+    <div class="flex justify-between" style="margin-bottom:1rem;flex-wrap:wrap;gap:.75rem">
+      <div>
+        <a routerLink="/recipes" class="text-muted" style="font-size:.85rem">← Recipes</a>
+        <h1 class="page-title" style="margin:.25rem 0 0">{{ recipe()!.title }}</h1>
+        @if (recipe()!.source_pages) {
+          <p class="text-muted" style="font-size:.8rem">Pages {{ recipe()!.source_pages }}</p>
+        }
+      </div>
+      <div class="flex gap-1">
+        @if (recipe()!.source_file) {
+          <a [href]="sourceUrl()" target="_blank" class="btn-secondary btn-sm" style="display:inline-flex;align-items:center;padding:.35rem .75rem">
+            View source
+          </a>
+        }
+        <button class="btn-danger btn-sm" (click)="delete()" [disabled]="deleting()">Delete</button>
+      </div>
+    </div>
+
+    @if (recipe()!.verification_status !== 'ok') {
+      <div class="alert-warning" style="margin-bottom:1rem">
+        <strong>⚠ Review needed:</strong> {{ recipe()!.verification_notes }}
+      </div>
+    }
+
+    @if (recipe()!.notes) {
+      <p style="margin-bottom:1rem;color:var(--color-text-muted)">{{ recipe()!.notes }}</p>
+    }
+
+    <div class="detail-grid">
+      <!-- Ingredients -->
+      <section class="card">
+        <div class="flex justify-between" style="margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+          <h2 class="section-title" style="margin:0">Ingredients</h2>
+          <div class="people-control">
+            <label>Servings:</label>
+            <button class="btn-secondary btn-sm" (click)="people.update(p => p > 1 ? p - 1 : 1)">−</button>
+            <span class="people-count">{{ people() }}</span>
+            <button class="btn-secondary btn-sm" (click)="people.update(p => p + 1)">+</button>
+          </div>
+        </div>
+        <ul class="ingredient-list">
+          @for (ing of scaledIngredients(); track ing.id) {
+            <li>
+              <span class="ing-qty">{{ ing.display }}</span>
+              <span class="ing-name">{{ ing.name }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <!-- Instructions -->
+      <section class="card">
+        <h2 class="section-title">Instructions</h2>
+        <ol class="step-list">
+          @for (step of recipe()!.steps; track step.step_number) {
+            <li>{{ step.text }}</li>
+          }
+        </ol>
+      </section>
+    </div>
+  }
+</div>

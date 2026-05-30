@@ -1,0 +1,72 @@
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.25rem;
+  align-items: start;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.people-control {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .875rem;
+
+  label { color: var(--color-text-muted); }
+}
+
+.people-count {
+  min-width: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.ingredient-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+
+  li {
+    display: flex;
+    gap: .75rem;
+    padding: .35rem 0;
+    border-bottom: 1px solid var(--color-border);
+    &:last-child { border-bottom: none; }
+  }
+}
+
+.ing-qty {
+  min-width: 70px;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-size: .9rem;
+}
+
+.ing-name {
+  font-size: .9rem;
+}
+
+.step-list {
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+
+  li {
+    font-size: .9rem;
+    line-height: 1.6;
+  }
+}
+
+.alert-warning {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius);
+  padding: .75rem 1rem;
+  font-size: .875rem;
+  color: #92400e;
+}

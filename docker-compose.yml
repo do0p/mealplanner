@@ -1,0 +1,26 @@
+services:
+  mealplanner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mealplanner
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OLLAMA_MODEL=qwen3:30b-a3b-32k
+      - OLLAMA_TIMEOUT=600
+      - DATA_DIR=/app/data
+    volumes:
+      - mealplanner-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  mealplanner-data:
+    driver: local
