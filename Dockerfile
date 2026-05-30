@@ -4,6 +4,8 @@ WORKDIR /frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
+COPY VERSION ./
+RUN printf "export const APP_VERSION = '%s';\n" "$(cat VERSION)" > src/app/version.ts
 RUN npm run build
 
 # Stage 2 — Python FastAPI backend (serves both API and built frontend)
@@ -26,7 +28,7 @@ ENV OLLAMA_TIMEOUT=600
 ENV OLLAMA_NUM_CTX=8192
 ENV OLLAMA_CHUNK_TOKENS=2000
 
-ENV ANTHROPIC_API_KEY=""
+# ANTHROPIC_API_KEY must be passed at runtime via -e, not set here
 ENV ANTHROPIC_MODEL=claude-haiku-4-5-20251001
 ENV ANTHROPIC_TIMEOUT=120
 ENV ANTHROPIC_CHUNK_TOKENS=5000
