@@ -85,7 +85,7 @@ def test_list_jobs_empty(tmp):
     assert client.get("/imports/").json() == []
 
 
-def test_process_creates_draft_recipes(tmp):
+def test_process_creates_accepted_recipes(tmp):
     client, svc = _make_client(tmp_dir=tmp)
     upload = client.post("/imports/uploads", files={"file": ("r.pdf", _PDF_BYTES, "application/pdf")})
     job_id = upload.json()["id"]
@@ -98,7 +98,7 @@ def test_process_creates_draft_recipes(tmp):
     assert job["recipe_count"] == 1
     assert len(job["recipes"]) == 1
     assert job["recipes"][0]["title"] == "Test Recipe"
-    assert job["recipes"][0]["status"] == "draft"
+    assert job["recipes"][0]["status"] == "accepted"
 
 
 def test_ingredients_stored_per_person(tmp):
@@ -146,42 +146,6 @@ def test_imperial_converted_at_import(tmp):
     assert milk["unit"] == "cup"
     assert milk["quantity_per_person"] == 0.5  # 1 cup / 2 servings
 
-
-def test_accept_all_marks_recipes_accepted(tmp):
-    client, svc = _make_client(tmp_dir=tmp)
-    client.post("/imports/uploads", files={"file": ("r.pdf", _PDF_BYTES, "application/pdf")})
-    jobs = client.get("/imports/").json()
-    job_id = jobs[0]["id"]
-    svc.process_job(job_id)
-
-    r = client.post(f"/imports/{job_id}/accept")
-    assert r.status_code == 200
-    assert r.json()["accepted"] == 1
-
-    job = client.get(f"/imports/{job_id}").json()
-    assert job["recipes"][0]["status"] == "accepted"
-
-
-def test_accept_specific_recipe_ids(tmp):
-    two_recipes = [
-        ExtractedRecipe(title="R1", base_servings=2, ingredients=[], steps=["Step 1."]),
-        ExtractedRecipe(title="R2", base_servings=2, ingredients=[], steps=["Step 2."]),
-    ]
-    client, svc = _make_client(fake_recipes=two_recipes, tmp_dir=tmp)
-    client.post("/imports/uploads", files={"file": ("r.pdf", _PDF_BYTES, "application/pdf")})
-    jobs = client.get("/imports/").json()
-    job_id = jobs[0]["id"]
-    svc.process_job(job_id)
-
-    all_recipes = client.get(f"/imports/{job_id}").json()["recipes"]
-    first_id = all_recipes[0]["id"]
-
-    client.post(f"/imports/{job_id}/accept", json={"recipe_ids": [first_id]})
-    # only R1 accepted, R2 still draft
-    accepted = client.get("/recipes/?status=accepted").json()
-    assert len(accepted) == 1
-    drafts = client.get("/recipes/?status=draft").json()
-    assert len(drafts) == 1
 
 
 def test_llm_status_fake_extractor_available(tmp):

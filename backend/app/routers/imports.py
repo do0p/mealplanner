@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 from app.adapters.extractor_registry import UnsupportedFormatError
 from app.dependencies import get_import_service
-from app.models import AcceptRequest, ImportJobRead, ImportJobSummary
+from app.models import ImportJobRead, ImportJobSummary
 from app.services.import_service import ImportService
 
 logger = logging.getLogger(__name__)
@@ -91,14 +91,3 @@ def delete_job(job_id: int, svc: ImportService = Depends(get_import_service)):
     return result
 
 
-@router.post("/{job_id}/accept")
-def accept_job(
-    job_id: int,
-    body: AcceptRequest = AcceptRequest(),
-    svc: ImportService = Depends(get_import_service),
-):
-    job = svc.get_job(job_id)
-    if job is None:
-        raise HTTPException(404, "Import job not found")
-    accepted = svc.accept(job_id, body.recipe_ids)
-    return {"accepted": len(accepted), "recipe_ids": accepted}

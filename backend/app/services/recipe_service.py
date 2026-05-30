@@ -31,8 +31,6 @@ def _to_recipe_read(r: Recipe) -> RecipeRead:
         is_vegetarian=r.is_vegetarian,
         is_vegan=r.is_vegan,
         is_favourite=r.is_favourite,
-        verification_status=r.verification_status,
-        verification_notes=r.verification_notes,
         status=r.status,
         created_at=r.created_at,
         ingredients=[
@@ -66,7 +64,6 @@ def list_recipes(session: Session, status: str | None = "accepted") -> list[Reci
             is_vegetarian=r.is_vegetarian,
             is_vegan=r.is_vegan,
             is_favourite=r.is_favourite,
-            verification_status=r.verification_status,
             status=r.status,
             created_at=r.created_at,
         )
@@ -106,8 +103,6 @@ def update_recipe(session: Session, recipe_id: int, data: RecipeUpdate) -> Recip
         r.is_vegan = data.is_vegan
     if data.is_favourite is not None:
         r.is_favourite = data.is_favourite
-    if data.verification_status is not None:
-        r.verification_status = data.verification_status
     if data.ingredients is not None:
         r.ingredients = [
             Ingredient(

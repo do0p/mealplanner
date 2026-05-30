@@ -101,16 +101,6 @@ def _normalize_title(title: str) -> str:
     return re.sub(r"\W+", " ", title.lower()).strip()
 
 
-def _deterministic_issues(steps: list[str], source: str) -> list[str]:
-    norm = " ".join(source.lower().split())
-    issues = []
-    for i, step in enumerate(steps, 1):
-        probe = " ".join(step[:60].lower().split())
-        if len(probe) >= 12 and probe not in norm:
-            issues.append(f"Step {i} opening not found verbatim in source")
-    return issues
-
-
 class ClaudeRecipeExtractor(RecipeExtractor):
 
     def _client(self) -> anthropic.Anthropic:
@@ -157,21 +147,9 @@ class ClaudeRecipeExtractor(RecipeExtractor):
             )
             chunk_tokens = new_tokens
 
-        # ── Phase 2: deterministic verification (no LLM) ───────────────────
-        total = len(ordered)
-        if on_progress:
-            on_progress("verifying", 0, total)
-
-        for i, r in enumerate(ordered):
+        for r in ordered:
             pages = [int(p) for p in (r.source_pages or "").split(",") if p.strip().isdigit()]
-            source_text = "\n\n".join(page_map[p] for p in pages if p in page_map)
-            r.raw_source_text = source_text
-            issues = _deterministic_issues(r.steps, source_text)
-            if issues:
-                r.verification_status = "needs_review"
-                r.verification_notes = "; ".join(issues)
-            if on_progress:
-                on_progress("verifying", i + 1, total)
+            r.raw_source_text = "\n\n".join(page_map[p] for p in pages if p in page_map)
 
         return ordered
 

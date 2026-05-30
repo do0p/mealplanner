@@ -8,11 +8,6 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-# --- verification / status vocab (stored as plain strings) ---
-VERIFY_OK = "ok"
-VERIFY_NEEDS_REVIEW = "needs_review"
-VERIFY_FAILED = "failed"
-
 RECIPE_DRAFT = "draft"
 RECIPE_ACCEPTED = "accepted"
 
@@ -69,8 +64,6 @@ class Recipe(SQLModel, table=True):
     is_vegan: bool = Field(default=False)
     is_favourite: bool = Field(default=False)
 
-    verification_status: str = VERIFY_OK
-    verification_notes: str | None = None
     status: str = RECIPE_DRAFT
     created_at: datetime = Field(default_factory=_now)
 
@@ -116,7 +109,7 @@ class ImportJob(SQLModel, table=True):
     recipe_count: int = 0
     progress_current: int = 0
     progress_total: int = 0
-    phase: str | None = None  # segmenting | extracting | verifying
+    phase: str | None = None  # segmenting | extracting
     created_at: datetime = Field(default_factory=_now)
     processed_at: datetime | None = None
 
@@ -153,8 +146,6 @@ class RecipeRead(BaseModel):
     is_vegetarian: bool
     is_vegan: bool
     is_favourite: bool
-    verification_status: str
-    verification_notes: str | None
     status: str
     created_at: datetime
     ingredients: list[IngredientRead]
@@ -171,7 +162,6 @@ class RecipeSummary(BaseModel):
     is_vegetarian: bool
     is_vegan: bool
     is_favourite: bool
-    verification_status: str
     status: str
     created_at: datetime
 
@@ -194,7 +184,6 @@ class RecipeUpdate(BaseModel):
     is_vegetarian: bool | None = None
     is_vegan: bool | None = None
     is_favourite: bool | None = None
-    verification_status: str | None = None
     ingredients: list[IngredientWrite] | None = None
     steps: list[str] | None = None
 
@@ -271,5 +260,3 @@ class ImportJobRead(BaseModel):
     recipes: list[RecipeSummary]
 
 
-class AcceptRequest(BaseModel):
-    recipe_ids: list[int] | None = None  # None = accept all drafts from this job

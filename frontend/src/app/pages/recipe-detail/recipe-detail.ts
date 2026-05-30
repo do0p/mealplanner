@@ -109,14 +109,6 @@ export class RecipeDetailPage implements OnInit {
     });
   }
 
-  approve() {
-    const r = this.recipe()!;
-    this.api.updateRecipe(r.id, { verification_status: 'ok' }).subscribe({
-      next: updated => { this.recipe.set(updated); this.toast.show('Recipe approved'); },
-      error: () => this.toast.show('Could not approve', 'error'),
-    });
-  }
-
   addIngredient() {
     this.draftIngredients.update(list => [...list, { name: '', quantity_per_person: null, unit: null, category: null, raw_text: null }]);
   }

@@ -49,7 +49,6 @@ def _seed_recipe(client: TestClient, **kwargs) -> dict:
             title=kwargs.get("title", "Test Recipe"),
             base_servings=kwargs.get("base_servings", 4),
             status=models.RECIPE_ACCEPTED,
-            verification_status=models.VERIFY_OK,
         )
         session.add(r)
         session.commit()

@@ -18,7 +18,6 @@ from app.adapters.format_detection import detect_format
 from app.config import settings
 from app.models import (
     RECIPE_ACCEPTED,
-    RECIPE_DRAFT,
     ImportJob,
     ImportJobRead,
     ImportJobSummary,
@@ -118,7 +117,6 @@ class ImportService:
                     course=r.course,
                     calories_per_person=r.calories_per_person,
                     protein_per_person=r.protein_per_person,
-                    verification_status=r.verification_status,
                     status=r.status,
                     created_at=r.created_at,
                     is_vegetarian=r.is_vegetarian,
@@ -235,10 +233,8 @@ class ImportService:
             ),
             source_pages=ext.source_pages,
             raw_source_text=ext.raw_source_text,
-            verification_status=ext.verification_status,
-            verification_notes=ext.verification_notes,
             import_job_id=job_id,
-            status=RECIPE_DRAFT,
+            status=RECIPE_ACCEPTED,
         )
         session.add(recipe)
         session.flush()  # get recipe.id
@@ -307,11 +303,11 @@ class ImportService:
             job = session.get(ImportJob, job_id)
             if job is None or job.status != JOB_FAILED:
                 return None
-            # Remove any draft recipes left over from the failed run
-            drafts = session.exec(
+            # Remove any recipes left over from the failed run
+            partial = session.exec(
                 select(Recipe).where(Recipe.import_job_id == job_id)
             ).all()
-            for r in drafts:
+            for r in partial:
                 session.delete(r)
             job.status = JOB_PENDING
             job.error = None
@@ -324,26 +320,6 @@ class ImportService:
             session.commit()
             session.refresh(job)
             return _job_summary(job)
-
-    # ------------------------------------------------------------------
-    # Accept drafts
-    # ------------------------------------------------------------------
-    def accept(self, job_id: int, recipe_ids: list[int] | None = None) -> list[int]:
-        with self._sf() as session:
-            stmt = select(Recipe).where(
-                Recipe.import_job_id == job_id,
-                Recipe.status == RECIPE_DRAFT,
-            )
-            if recipe_ids is not None:
-                stmt = stmt.where(Recipe.id.in_(recipe_ids))
-            recipes = session.exec(stmt).all()
-            accepted_ids = []
-            for r in recipes:
-                r.status = RECIPE_ACCEPTED
-                session.add(r)
-                accepted_ids.append(r.id)
-            session.commit()
-            return accepted_ids
 
 
 def _job_summary(j: ImportJob) -> ImportJobSummary:

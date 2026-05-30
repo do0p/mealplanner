@@ -75,15 +75,6 @@ _EXTRACT_SCHEMA = {
     "required": ["title", "course", "ingredients", "steps", "nutrition"],
 }
 
-_VERIFY_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "faithful": {"type": "boolean"},
-        "issues": {"type": "array", "items": {"type": "string"}},
-    },
-    "required": ["faithful", "issues"],
-}
-
 
 def _client() -> ollama.Client:
     return ollama.Client(host=settings.ollama_base_url, timeout=settings.ollama_timeout)
@@ -141,15 +132,6 @@ def _merge_recipe_list(all_found: list[dict]) -> list[dict]:
     result.sort(key=lambda x: min(x["page_numbers"]) if x["page_numbers"] else 0)
     return result
 
-
-def _deterministic_issues(steps: list[str], source: str) -> list[str]:
-    norm = " ".join(source.lower().split())
-    issues = []
-    for i, step in enumerate(steps, 1):
-        probe = " ".join(step[:60].lower().split())
-        if len(probe) >= 12 and probe not in norm:
-            issues.append(f"Step {i} opening not found verbatim in source")
-    return issues
 
 
 class OllamaRecipeExtractor(RecipeExtractor):
@@ -230,7 +212,7 @@ class OllamaRecipeExtractor(RecipeExtractor):
         if on_progress:
             on_progress("extracting", 0, total_recipes)
 
-        extracted: list[ExtractedRecipe] = []
+        results: list[ExtractedRecipe] = []
         for i, rec_info in enumerate(found):
             title: str = rec_info.get("title", "Untitled")
             pages: list[int] = rec_info.get("page_numbers") or [n for n, _ in segments]
@@ -239,22 +221,9 @@ class OllamaRecipeExtractor(RecipeExtractor):
             ) or _build_text(segments)
 
             ext = self._extract_one(title, source_text, pages)
-            extracted.append(ext)
-            if on_progress:
-                on_progress("extracting", i + 1, total_recipes)
-
-        # ── Phase 3: verification ──────────────────────────────────────────
-        if on_progress:
-            on_progress("verifying", 0, total_recipes)
-
-        results: list[ExtractedRecipe] = []
-        for i, ext in enumerate(extracted):
-            pages = [int(p) for p in (ext.source_pages or "").split(",") if p.strip().isdigit()]
-            source_text = "\n\n".join(page_map[p] for p in pages if p in page_map) or _build_text(segments)
-            ext = self._verify(ext, source_text)
             results.append(ext)
             if on_progress:
-                on_progress("verifying", i + 1, total_recipes)
+                on_progress("extracting", i + 1, total_recipes)
 
         return results
 
@@ -296,8 +265,6 @@ class OllamaRecipeExtractor(RecipeExtractor):
                 title=title,
                 source_pages=",".join(str(p) for p in pages),
                 raw_source_text=source_text,
-                verification_status="failed",
-                verification_notes=str(exc),
             )
 
         ingredients = [
@@ -326,46 +293,3 @@ class OllamaRecipeExtractor(RecipeExtractor):
             raw_source_text=source_text,
         )
 
-    def _verify(self, recipe: ExtractedRecipe, source_text: str) -> ExtractedRecipe:
-        if recipe.verification_status == "failed":
-            return recipe
-
-        det_issues = _deterministic_issues(recipe.steps, source_text)
-
-        try:
-            extracted_summary = json.dumps(
-                {"title": recipe.title, "steps": recipe.steps[:5]}, ensure_ascii=False
-            )
-            v = _chat(
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a quality-check assistant for recipe extraction.",
-                    },
-                    {
-                        "role": "user",
-                        "content": (
-                            "/no_think\n"
-                            f"Source text (excerpt):\n---\n{source_text[:3000]}\n---\n\n"
-                            f"Extracted:\n{extracted_summary}\n\n"
-                            "Check: (1) Do instruction steps appear verbatim? "
-                            "(2) Are all ingredients captured? "
-                            "(3) Are quantities faithful (as written in the recipe)?\n"
-                            "Return {faithful: bool, issues: [string]}."
-                        ),
-                    },
-                ],
-                schema=_VERIFY_SCHEMA,
-            )
-            llm_issues: list[str] = v.get("issues", [])
-            faithful: bool = v.get("faithful", True)
-        except Exception as exc:
-            logger.warning("Verification LLM call failed for '%s': %s", recipe.title, exc)
-            llm_issues = []
-            faithful = True
-
-        all_issues = det_issues + llm_issues
-        if not faithful or all_issues:
-            recipe.verification_status = "needs_review"
-            recipe.verification_notes = "; ".join(all_issues) if all_issues else "LLM flagged issues"
-        return recipe

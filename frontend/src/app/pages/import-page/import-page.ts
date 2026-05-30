@@ -126,19 +126,6 @@ export class ImportPage implements OnInit, OnDestroy {
     }
   }
 
-  acceptAll(jobId: number) {
-    this.api.acceptJob(jobId).subscribe(() => {
-      this.refresh();
-      this.api.getJob(jobId).subscribe(j => this.jobs.update(jobs => jobs.map(jj => jj.id === jobId ? j : jj)));
-    });
-  }
-
-  acceptOne(jobId: number, recipeId: number) {
-    this.api.acceptJob(jobId, [recipeId]).subscribe(() => {
-      this.api.getJob(jobId).subscribe(j => this.jobs.update(jobs => jobs.map(jj => jj.id === jobId ? j : jj)));
-    });
-  }
-
   abort(jobId: number) {
     this.aborting.set(jobId);
     this.api.abortJob(jobId).subscribe({
@@ -172,7 +159,7 @@ export class ImportPage implements OnInit, OnDestroy {
     });
   }
 
-  readonly PHASES = ['segmenting', 'extracting', 'verifying'] as const;
+  readonly PHASES = ['segmenting', 'extracting'] as const;
 
   phaseStatus(job: ImportJob, phase: string): 'waiting' | 'active' | 'done' {
     if (job.status !== 'processing') return 'waiting';

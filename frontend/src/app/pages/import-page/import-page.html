@@ -141,27 +141,15 @@
     @if (expandedJob() === job.id && job.recipes) {
       <div class="recipe-list mt-2">
         @if (job.status === 'completed' && job.recipes.length > 0) {
-          <div class="flex justify-between" style="margin-bottom:.5rem">
+          <div style="margin-bottom:.5rem">
             <span class="text-muted" style="font-size:.875rem">Extracted recipes:</span>
-            <button class="btn-primary btn-sm" (click)="acceptAll(job.id)">Accept all</button>
           </div>
         }
         @for (r of job.recipes; track r.id) {
           <div class="recipe-card">
             <div class="recipe-row" (click)="toggleRecipe(r.id)" style="cursor:pointer">
-              <div>
-                <span class="recipe-title">{{ r.title }}</span>
-                @if (r.verification_status !== 'ok') {
-                  <span class="badge {{ r.verification_status }}" style="margin-left:.5rem">{{ r.verification_status }}</span>
-                }
-              </div>
-              <div class="flex gap-1">
-                <span class="badge {{ r.status }}">{{ r.status }}</span>
-                @if (r.status === 'draft') {
-                  <button class="btn-secondary btn-sm" (click)="$event.stopPropagation(); acceptOne(job.id, r.id)">Accept</button>
-                }
-                <span class="expand-icon">{{ expandedRecipe() === r.id ? '▲' : '▼' }}</span>
-              </div>
+              <span class="recipe-title">{{ r.title }}</span>
+              <span class="expand-icon">{{ expandedRecipe() === r.id ? '▲' : '▼' }}</span>
             </div>
             @if (expandedRecipe() === r.id) {
               @let detail = recipeDetails().get(r.id);

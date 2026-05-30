@@ -25,8 +25,6 @@ class ExtractedRecipe(BaseModel):
     protein_total: float | None = None           # estimated total protein (g) for the whole recipe
     calories_per_serving_stated: float | None = None  # explicitly stated per-serving kcal from the text
     protein_per_serving_stated: float | None = None   # explicitly stated per-serving protein (g) from the text
-    verification_status: str = "ok"
-    verification_notes: str | None = None
 
 
 class RecipeExtractor(ABC):

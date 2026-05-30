@@ -22,7 +22,6 @@ export interface RecipeSummary {
   is_vegetarian: boolean;
   is_vegan: boolean;
   is_favourite: boolean;
-  verification_status: string;
   status: string;
   created_at: string;
 }
@@ -31,8 +30,6 @@ export interface Recipe extends RecipeSummary {
   notes: string | null;
   source_format: string | null;
   source_file: string | null;
-  source_pages: string | null;
-  verification_notes: string | null;
   import_job_id: number | null;
   ingredients: Ingredient[];
   steps: Step[];

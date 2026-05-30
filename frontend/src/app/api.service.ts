@@ -91,13 +91,6 @@ export class ApiService {
     return this.http.get<ImportJob>(`${this.base}/imports/${id}`);
   }
 
-  acceptJob(jobId: number, recipeIds?: number[]): Observable<{ accepted: number }> {
-    return this.http.post<{ accepted: number }>(
-      `${this.base}/imports/${jobId}/accept`,
-      recipeIds != null ? { recipe_ids: recipeIds } : {}
-    );
-  }
-
   retryJob(jobId: number): Observable<{ queued: number; job_ids?: number[] }> {
     return this.http.post<{ queued: number }>(`${this.base}/imports/${jobId}/retry`, {});
   }

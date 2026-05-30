@@ -12,9 +12,6 @@
         } @else {
           <h1 class="page-title" style="margin:.25rem 0 0">{{ recipe()!.title }}</h1>
         }
-        @if (recipe()!.source_pages) {
-          <p class="text-muted" style="font-size:.8rem">Pages {{ recipe()!.source_pages }}</p>
-        }
       </div>
       <div class="flex gap-1" style="align-items:flex-start">
         @if (!editing()) {
@@ -31,13 +28,6 @@
         }
       </div>
     </div>
-
-    @if (recipe()!.verification_status !== 'ok') {
-      <div class="alert-warning" style="margin-bottom:1rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
-        <div><strong>⚠ Review needed:</strong> {{ recipe()!.verification_notes }}</div>
-        <button class="btn-secondary btn-sm" style="white-space:nowrap;flex-shrink:0" (click)="approve()">Approve</button>
-      </div>
-    }
 
     @if (editing()) {
       <div class="diet-toggles">

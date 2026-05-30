@@ -29,8 +29,6 @@ def _migrate(eng) -> None:
     with eng.connect() as conn:
         _migrate_table(conn, "recipe", [
             ("import_job_id",       "INTEGER REFERENCES importjob(id)"),
-            ("verification_status", "VARCHAR"),
-            ("verification_notes",  "VARCHAR"),
             ("source_pages",        "VARCHAR"),
             ("raw_source_text",     "VARCHAR"),
             ("course",              "VARCHAR"),
