@@ -273,12 +273,26 @@ class ClaudeRecipeExtractor(RecipeExtractor):
             return [], False
 
         raw_recipes = tool_block.input.get("recipes", [])
+        if not isinstance(raw_recipes, list):
+            logger.warning(
+                "Claude chunk %d/%d: 'recipes' field is %s, not a list — skipping chunk",
+                idx, total, type(raw_recipes).__name__,
+            )
+            return [], False
+
         logger.info(
             "Claude chunk %d/%d: extracted %d recipe(s)", idx, total, len(raw_recipes),
         )
 
         result: list[ExtractedRecipe] = []
         for data in raw_recipes:
+            if not isinstance(data, dict):
+                logger.warning(
+                    "Claude chunk %d/%d: recipe item is %s, not a dict — skipping",
+                    idx, total, type(data).__name__,
+                )
+                continue
+            ingredients_raw = data.get("ingredients", [])
             ingredients = [
                 ExtractedIngredient(
                     name=ing.get("name", ""),
@@ -287,7 +301,8 @@ class ClaudeRecipeExtractor(RecipeExtractor):
                     category=ing.get("category"),
                     raw_text=ing.get("raw_text"),
                 )
-                for ing in data.get("ingredients", [])
+                for ing in (ingredients_raw if isinstance(ingredients_raw, list) else [])
+                if isinstance(ing, dict)
             ]
             nutrition = data.get("nutrition") or {}
             pages = data.get("page_numbers") or []

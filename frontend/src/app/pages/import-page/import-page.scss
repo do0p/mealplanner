@@ -160,7 +160,7 @@
   }
 
   .phase-count {
-    width: 4rem;
+    min-width: 4rem;
     text-align: right;
     color: var(--color-text-muted);
     white-space: nowrap;

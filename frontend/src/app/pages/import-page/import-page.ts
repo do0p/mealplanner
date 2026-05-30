@@ -16,6 +16,10 @@ export class ImportPage implements OnInit, OnDestroy {
   private pollSub?: Subscription;
   private jobPollSub?: Subscription;
 
+  private phaseStartTimes = new Map<string, number>();
+  private etaCache = new Map<string, string>();
+  private etaLastUpdate = new Map<string, number>();
+
   llm = signal<LLMStatus | null>(null);
   jobs = signal<ImportJob[]>([]);
   uploading = signal(false);
@@ -36,6 +40,7 @@ export class ImportPage implements OnInit, OnDestroy {
     // Poll LLM status + jobs every 5 s
     this.pollSub = interval(5000).pipe(switchMap(() => this.api.getLLMStatus())).subscribe(s => this.llm.set(s));
     this.jobPollSub = interval(5000).pipe(switchMap(() => this.api.getJobs())).subscribe(newJobs => {
+      newJobs.forEach(j => this.updateEta(j));
       this.jobs.update(current => newJobs.map(j => {
         const existing = current.find(c => c.id === j.id);
         return existing?.recipes ? { ...j, recipes: existing.recipes } : j;
@@ -174,8 +179,50 @@ export class ImportPage implements OnInit, OnDestroy {
     const s = this.phaseStatus(job, phase);
     if (s === 'done') return '✓';
     if (s === 'waiting') return '–';
-    if (job.progress_total > 0) return `${job.progress_current} / ${job.progress_total}`;
+    if (job.progress_total > 0) {
+      const count = `${job.progress_current} / ${job.progress_total}`;
+      if (s === 'active') {
+        const eta = this.etaCache.get(`${job.id}:${phase}`) ?? '';
+        return eta ? `${count} · ${eta}` : count;
+      }
+      return count;
+    }
     return '…';
+  }
+
+  private updateEta(job: ImportJob): void {
+    if (job.status !== 'processing' || !job.phase) return;
+    const key = `${job.id}:${job.phase}`;
+    const now = Date.now();
+
+    if (!this.phaseStartTimes.has(key)) {
+      this.phaseStartTimes.set(key, now);
+    }
+
+    const lastUpdate = this.etaLastUpdate.get(key) ?? 0;
+    if (now - lastUpdate < 1000) return;
+    this.etaLastUpdate.set(key, now);
+
+    const elapsed = now - this.phaseStartTimes.get(key)!;
+    const { progress_current: cur, progress_total: total } = job;
+
+    if (cur <= 0 || total <= 0 || elapsed < 5000) {
+      this.etaCache.set(key, '');
+      return;
+    }
+
+    const remaining = (total - cur) * (elapsed / cur);
+    this.etaCache.set(key, this.fmtDuration(remaining) + ' remaining');
+  }
+
+  private fmtDuration(ms: number): string {
+    const s = Math.round(ms / 1000);
+    if (s < 60) return `~${s}s`;
+    const m = Math.floor(s / 60);
+    const rem = s % 60;
+    if (m < 60) return `~${m}m ${rem}s`;
+    const h = Math.floor(m / 60);
+    return `~${h}h ${Math.floor(m % 60)}m`;
   }
 
   hasPending(): boolean {
