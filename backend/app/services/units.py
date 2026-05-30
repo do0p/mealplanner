@@ -109,5 +109,5 @@ def convert_step_text(text: str) -> str:
     """Replace °F temperatures with °C in a recipe step string."""
     def _replace(m: _re.Match) -> str:
         c = fahrenheit_to_celsius(float(m.group(1)))
-        return f"{round(c)}°C"
+        return f"{round(c / 10) * 10}°C"
     return _FAHRENHEIT_RE.sub(_replace, text)

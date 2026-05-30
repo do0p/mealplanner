@@ -81,8 +81,8 @@ def test_fahrenheit_to_celsius():
 
 
 def test_convert_step_text():
-    assert units.convert_step_text("Bake at 375°F for 30 minutes.") == "Bake at 191°C for 30 minutes."
-    assert units.convert_step_text("Heat to 350 F until golden.") == "Heat to 177°C until golden."
+    assert units.convert_step_text("Bake at 375°F for 30 minutes.") == "Bake at 190°C for 30 minutes."
+    assert units.convert_step_text("Heat to 350 F until golden.") == "Heat to 180°C until golden."
     assert units.convert_step_text("Simmer at 100°C.") == "Simmer at 100°C."
     assert units.convert_step_text("No temperature here.") == "No temperature here."
-    assert units.convert_step_text("Preheat to 400°F and 425°F.") == "Preheat to 204°C and 218°C."
+    assert units.convert_step_text("Preheat to 400°F and 425°F.") == "Preheat to 200°C and 220°C."

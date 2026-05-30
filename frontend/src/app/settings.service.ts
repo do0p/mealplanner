@@ -5,7 +5,16 @@ const DEFAULT_TZ = 'Europe/Vienna';
 export function formatQty(qty: number | null, unit: string | null): string {
   if (qty == null) return '';
   const u = unit === 'pcs' ? '' : (unit ?? '');
-  const r = unit === 'pcs' ? Math.ceil(qty - 1e-9) : qty >= 10 ? Math.round(qty) : Math.round(qty * 10) / 10;
+  let r: number;
+  if (unit === 'pcs') {
+    r = Math.ceil(qty - 1e-9);
+  } else if ((unit === 'g' || unit === 'ml') && qty >= 10) {
+    r = Math.round(qty / 5) * 5;
+  } else if (qty >= 10) {
+    r = Math.round(qty);
+  } else {
+    r = Math.round(qty * 10) / 10;
+  }
   return u ? `${r} ${u}` : `${r}`;
 }
 
