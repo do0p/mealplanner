@@ -28,6 +28,21 @@ def test_to_metric_known_units(qty, unit, exp_qty, exp_unit):
     assert q == pytest.approx(exp_qty)
 
 
+def test_to_metric_compound_oz_units():
+    # "(13.5-ounce) can" — the real-world case that triggered this fix
+    qty, unit = units.to_metric(0.5, "(13.5-ounce) can")
+    assert unit == "g"
+    assert qty == pytest.approx(0.5 * 13.5 * 28.3495, rel=1e-4)
+    # plain "28-oz bag"
+    qty, unit = units.to_metric(1, "28-oz bag")
+    assert unit == "g"
+    assert qty == pytest.approx(28 * 28.3495, rel=1e-4)
+    # fluid ounces: "16-fl-oz bottle"
+    qty, unit = units.to_metric(2, "16-fl-oz bottle")
+    assert unit == "ml"
+    assert qty == pytest.approx(2 * 16 * 29.5735, rel=1e-4)
+
+
 def test_to_metric_preserves_unconvertible_units():
     assert units.to_metric(1, "pinch") == (1, "pinch")
     assert units.to_metric(2, "Cloves") == (2, "cloves")
@@ -93,3 +108,10 @@ def test_convert_step_text():
     assert units.convert_step_text("8 inches in diameter.") == "20 cm in diameter."
     assert units.convert_step_text('Use a 12" pan.') == "Use a 30 cm pan."
     assert units.convert_step_text("No measurements here.") == "No measurements here."
+    # oz → g
+    assert units.convert_step_text("Add 4 oz of cream cheese.") == "Add 113 g of cream cheese."
+    assert units.convert_step_text("Use a 13.5-ounce can of coconut milk.") == "Use a 383 g can of coconut milk."
+    assert units.convert_step_text("Stir in 2 ounces of butter.") == "Stir in 57 g of butter."
+    # fl oz → ml
+    assert units.convert_step_text("Pour 8 fl oz of milk.") == "Pour 237 ml of milk."
+    assert units.convert_step_text("Add 16 fluid ounces of stock.") == "Add 473 ml of stock."

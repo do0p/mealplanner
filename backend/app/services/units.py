@@ -35,6 +35,28 @@ _COUNT = {
 }
 
 
+# Compound units: "(13.5-ounce) can", "28-oz bag", "16-fl-oz bottle", etc.
+# Optional leading/trailing parens around the numeric+unit part are handled by \(? / \)?.
+_COMPOUND_FL_OZ_RE = _re.compile(
+    r'^\(?\s*(\d+(?:\.\d+)?)\s*-?\s*(?:fl\.?\s*-?\s*oz|fluid\s+ounce[s]?)\s*\)?\s+\S',
+    _re.IGNORECASE,
+)
+_COMPOUND_OZ_RE = _re.compile(
+    r'^\(?\s*(\d+(?:\.\d+)?)\s*-?\s*(?:oz|ounce[s]?)\s*\)?\s+\S',
+    _re.IGNORECASE,
+)
+
+# Step-text patterns for inline oz / fl oz conversions (e.g. "13.5-ounce can", "8 fl oz milk")
+_FL_OZ_STEP_RE = _re.compile(
+    r'(\d+(?:\.\d+)?|\d+/\d+)\s*-?\s*(?:fl\.?\s*-?\s*oz|fluid\s+ounce[s]?)\b',
+    _re.IGNORECASE,
+)
+_OZ_STEP_RE = _re.compile(
+    r'(\d+(?:\.\d+)?|\d+/\d+)\s*-?\s*(?:oz|ounce[s]?)\b',
+    _re.IGNORECASE,
+)
+
+
 def _clean(unit: str) -> str:
     return " ".join(unit.strip().lower().rstrip(".").split())
 
@@ -56,6 +78,14 @@ def to_metric(quantity: float | None, unit: str | None) -> tuple[float | None, s
         return _scaled(quantity, _VOLUME[u]), CANON_VOLUME
     if u in _COUNT:
         return quantity, CANON_COUNT
+    # Compound units: "(13.5-ounce) can", "28-oz bag", "16-fl-oz bottle", …
+    # Check fluid ounces before plain ounces to avoid partial matches.
+    m = _COMPOUND_FL_OZ_RE.match(u)
+    if m:
+        return _scaled(quantity, float(m.group(1)) * _VOLUME["fl oz"]), CANON_VOLUME
+    m = _COMPOUND_OZ_RE.match(u)
+    if m:
+        return _scaled(quantity, float(m.group(1)) * _MASS["oz"]), CANON_MASS
     return quantity, u
 
 
@@ -131,6 +161,18 @@ def convert_step_text(text: str) -> str:
         val = _round_cm(cm)
         return f"{int(val) if val == int(val) else val} cm"
 
+    def _replace_fl_oz(m: _re.Match) -> str:
+        ml = _parse_frac(m.group(1)) * _VOLUME["fl oz"]
+        r = round_quantity(ml, CANON_VOLUME)
+        return f"{int(r) if r == int(r) else r} ml"
+
+    def _replace_oz(m: _re.Match) -> str:
+        g = _parse_frac(m.group(1)) * _MASS["oz"]
+        r = round_quantity(g, CANON_MASS)
+        return f"{int(r) if r == int(r) else r} g"
+
     text = _FAHRENHEIT_RE.sub(_replace_f, text)
     text = _INCH_RE.sub(_replace_inch, text)
+    text = _FL_OZ_STEP_RE.sub(_replace_fl_oz, text)
+    text = _OZ_STEP_RE.sub(_replace_oz, text)
     return text
