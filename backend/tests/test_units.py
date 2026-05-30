@@ -8,9 +8,9 @@ from app.services import units
 @pytest.mark.parametrize(
     "qty,unit,exp_qty,exp_unit",
     [
-        (1, "cup", 240.0, "ml"),
-        (2, "tbsp", 30.0, "ml"),
-        (3, "tsp", 15.0, "ml"),
+        (1, "cup", 1, "cup"),
+        (2, "tbsp", 2, "tbsp"),
+        (3, "tsp", 3, "tsp"),
         (1, "l", 1000.0, "ml"),
         (1, "dl", 100.0, "ml"),
         (1, "oz", 28.3495, "g"),
@@ -38,8 +38,9 @@ def test_to_metric_none_quantity_none_unit():
 
 
 def test_to_metric_case_and_whitespace_insensitive():
-    assert units.to_metric(1, " Cup ") == (240.0, "ml")
-    assert units.to_metric(1, "TBSP.") == (15.0, "ml")
+    assert units.to_metric(1, " Cup ") == (1, "cup")
+    assert units.to_metric(1, "TBSP.") == (1, "tbsp")
+    assert units.to_metric(1, "DL") == (100.0, "ml")
 
 
 def test_per_person_normalizes_by_servings():
@@ -77,3 +78,11 @@ def test_format_quantity():
 def test_fahrenheit_to_celsius():
     assert units.fahrenheit_to_celsius(350) == pytest.approx(176.666, abs=1e-3)
     assert math.isclose(units.fahrenheit_to_celsius(32), 0.0)
+
+
+def test_convert_step_text():
+    assert units.convert_step_text("Bake at 375°F for 30 minutes.") == "Bake at 191°C for 30 minutes."
+    assert units.convert_step_text("Heat to 350 F until golden.") == "Heat to 177°C until golden."
+    assert units.convert_step_text("Simmer at 100°C.") == "Simmer at 100°C."
+    assert units.convert_step_text("No temperature here.") == "No temperature here."
+    assert units.convert_step_text("Preheat to 400°F and 425°F.") == "Preheat to 204°C and 218°C."

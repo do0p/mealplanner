@@ -143,8 +143,8 @@ def test_imperial_converted_at_import(tmp):
     detail = client.get(f"/recipes/{recipe_id}?status=all").json()
 
     milk = detail["ingredients"][0]
-    assert milk["unit"] == "ml"
-    assert milk["quantity_per_person"] == 120.0  # 1 cup=240ml / 2 servings
+    assert milk["unit"] == "cup"
+    assert milk["quantity_per_person"] == 0.5  # 1 cup / 2 servings
 
 
 def test_accept_all_marks_recipes_accepted(tmp):

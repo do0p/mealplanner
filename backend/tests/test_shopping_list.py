@@ -63,8 +63,8 @@ def test_imperial_converted_then_aggregated():
     a = RecipeSelection("A", 2, [IngredientInput("Milk", 1, "cup", "dairy")])
     sl = build_shopping_list([a])
     milk = _find(sl, "Milk")
-    assert milk.unit == "ml"
-    assert milk.quantity == 480.0  # 1 cup/person * 2 = 2 cups = 480 ml
+    assert milk.unit == "cup"
+    assert milk.quantity == 2.0  # 1 cup/person * 2 people
 
 
 def test_category_grouping_and_order():

@@ -5,6 +5,7 @@ metric conversion: whatever unit comes in, ingredient quantities are reduced to
 the canonical metric units g / ml / pcs where possible.
 """
 import math
+import re as _re
 
 CANON_MASS = "g"
 CANON_VOLUME = "ml"
@@ -23,9 +24,6 @@ _VOLUME = {
     "l": 1000.0, "liter": 1000.0, "liters": 1000.0, "litre": 1000.0, "litres": 1000.0,
     "dl": 100.0, "deciliter": 100.0, "deciliters": 100.0,
     "cl": 10.0, "centiliter": 10.0, "centiliters": 10.0,
-    "tsp": 5.0, "teaspoon": 5.0, "teaspoons": 5.0,
-    "tbsp": 15.0, "tbs": 15.0, "tablespoon": 15.0, "tablespoons": 15.0,
-    "cup": 240.0, "cups": 240.0,
     "fl oz": 29.5735, "floz": 29.5735, "fluid ounce": 29.5735, "fluid ounces": 29.5735,
     "pint": 473.176, "pints": 473.176, "pt": 473.176,
     "quart": 946.353, "quarts": 946.353, "qt": 946.353,
@@ -102,3 +100,14 @@ def format_quantity(quantity: float | None, unit: str | None) -> str:
 
 def fahrenheit_to_celsius(f: float) -> float:
     return (f - 32.0) * 5.0 / 9.0
+
+
+_FAHRENHEIT_RE = _re.compile(r'(\d+(?:\.\d+)?)\s*°?\s*F\b')
+
+
+def convert_step_text(text: str) -> str:
+    """Replace °F temperatures with °C in a recipe step string."""
+    def _replace(m: _re.Match) -> str:
+        c = fahrenheit_to_celsius(float(m.group(1)))
+        return f"{round(c)}°C"
+    return _FAHRENHEIT_RE.sub(_replace, text)

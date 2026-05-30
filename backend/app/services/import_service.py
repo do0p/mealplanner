@@ -247,7 +247,7 @@ class ImportService:
             ))
 
         for idx, text in enumerate(ext.steps):
-            session.add(InstructionStep(recipe_id=recipe.id, step_number=idx + 1, text=text))
+            session.add(InstructionStep(recipe_id=recipe.id, step_number=idx + 1, text=units.convert_step_text(text)))
 
         session.commit()
         session.refresh(recipe)

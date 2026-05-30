@@ -76,20 +76,17 @@ _EXTRACT_TOOL = {
 _SYSTEM_PROMPT = (
     "You are a recipe extraction assistant. For every recipe in the document, "
     "call submit_recipes with full structured data. Rules:\n"
-    "1. Copy instruction steps VERBATIM — do not paraphrase. "
-    "Exception: replace °F temperatures with °C inline (e.g. '375°F' → '190°C').\n"
-    "2. Convert weights to metric: oz→g (1 oz=28.35g), lb→g (1 lb=453g). "
-    "Keep volumetric cooking measures as-is: cups, tablespoons (tbsp), teaspoons (tsp).\n"
-    "3. Ingredient quantities are as written in the recipe (for the stated "
+    "1. Copy instruction steps VERBATIM — do not paraphrase or convert anything.\n"
+    "2. Ingredient quantities are as written in the recipe (for the stated "
     "serving size — do NOT divide them yourself).\n"
-    "4. For each ingredient supply: name, quantity (number or null), "
-    "unit (metric or null), category (produce/dairy/meat/seafood/bakery/"
+    "3. For each ingredient supply: name, quantity (number or null), "
+    "unit (exactly as written, or null), category (produce/dairy/meat/seafood/bakery/"
     "pantry/spices/frozen/beverages), raw_text (original line).\n"
-    "5. Set course to one of: breakfast, appetizer, soup, salad, main, "
+    "4. Set course to one of: breakfast, appetizer, soup, salad, main, "
     "side, dessert, snack, beverage.\n"
-    "6. Estimate total calories (kcal) and protein (g) for the whole recipe "
+    "5. Estimate total calories (kcal) and protein (g) for the whole recipe "
     "as written (before dividing by servings).\n"
-    "7. page_numbers must reference the [Page N] markers in the source text."
+    "6. page_numbers must reference the [Page N] markers in the source text."
 )
 
 
