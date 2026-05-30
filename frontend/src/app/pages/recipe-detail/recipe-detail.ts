@@ -61,10 +61,9 @@ export class RecipeDetailPage implements OnInit {
 
   scaledNutrition = computed(() => {
     const r = this.recipe();
-    const n = this.people();
     if (!r) return null;
-    const cal = r.calories_per_person != null ? r.calories_per_person * n : null;
-    const prot = r.protein_per_person != null ? r.protein_per_person * n : null;
+    const cal = r.calories_per_person;
+    const prot = r.protein_per_person;
     if (cal == null && prot == null) return null;
     return { cal, prot };
   });
