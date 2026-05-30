@@ -51,9 +51,6 @@
             @if (r.course) {
               <span class="course-chip">{{ r.course }}</span>
             }
-            @if (r.base_servings) {
-              <span class="text-muted">Serves {{ r.base_servings }}</span>
-            }
           </div>
           @if (r.calories_per_person != null || r.protein_per_person != null) {
             <div class="recipe-card-nutrition">

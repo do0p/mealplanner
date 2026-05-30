@@ -151,9 +151,6 @@
             <div class="recipe-row" (click)="toggleRecipe(r.id)" style="cursor:pointer">
               <div>
                 <span class="recipe-title">{{ r.title }}</span>
-                @if (r.base_servings) {
-                  <span class="text-muted" style="font-size:.8rem;margin-left:.4rem">serves {{ r.base_servings }}</span>
-                }
                 @if (r.verification_status !== 'ok') {
                   <span class="badge {{ r.verification_status }}" style="margin-left:.5rem">{{ r.verification_status }}</span>
                 }

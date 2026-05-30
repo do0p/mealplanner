@@ -14,7 +14,7 @@ import { RecipeSummary } from '../../models';
 export class RecipesPage implements OnInit {
   private api = inject(ApiService);
 
-  readonly HIGH_PROTEIN_G = 50;
+  readonly HIGH_PROTEIN_G = 40;
   readonly LOW_CALORIE_KCAL = 600;
 
   recipes = signal<RecipeSummary[]>([]);

@@ -99,9 +99,6 @@
       <ul class="picker-list">
         @for (r of pickerResults(); track r.id) {
           <li (click)="pickRecipe(r)">{{ r.title }}
-            @if (r.base_servings) {
-              <span class="text-muted"> · serves {{ r.base_servings }}</span>
-            }
           </li>
         }
         @if (pickerResults().length === 0) {
