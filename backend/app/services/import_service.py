@@ -121,6 +121,9 @@ class ImportService:
                     verification_status=r.verification_status,
                     status=r.status,
                     created_at=r.created_at,
+                    is_vegetarian=r.is_vegetarian,
+                    is_vegan=r.is_vegan,
+                    is_favourite=r.is_favourite,
                 )
                 for r in recipes
             ]

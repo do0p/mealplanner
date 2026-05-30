@@ -34,6 +34,8 @@ export class RecipeDetailPage implements OnInit {
   draftTitle = signal('');
   draftIngredients = signal<IngredientDraft[]>([]);
   draftSteps = signal<string[]>([]);
+  draftVegetarian = signal(false);
+  draftVegan = signal(false);
 
   scaledIngredients = computed(() => {
     const r = this.recipe();
@@ -76,6 +78,8 @@ export class RecipeDetailPage implements OnInit {
       raw_text: i.raw_text,
     })));
     this.draftSteps.set(r.steps.map(s => s.text));
+    this.draftVegetarian.set(r.is_vegetarian);
+    this.draftVegan.set(r.is_vegan);
     this.editing.set(true);
   }
 
@@ -90,6 +94,8 @@ export class RecipeDetailPage implements OnInit {
       title: this.draftTitle(),
       ingredients: this.draftIngredients(),
       steps: this.draftSteps().filter(s => s.trim()),
+      is_vegetarian: this.draftVegetarian(),
+      is_vegan: this.draftVegan(),
     }).subscribe({
       next: updated => { this.recipe.set(updated); this.editing.set(false); this.saving.set(false); },
       error: () => this.saving.set(false),

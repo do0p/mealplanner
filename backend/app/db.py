@@ -36,6 +36,9 @@ def _migrate(eng) -> None:
             ("course",              "VARCHAR"),
             ("calories_per_person", "REAL"),
             ("protein_per_person",  "REAL"),
+            ("is_vegetarian",       "BOOLEAN DEFAULT 0"),
+            ("is_vegan",            "BOOLEAN DEFAULT 0"),
+            ("is_favourite",        "BOOLEAN DEFAULT 0"),
         ])
         _migrate_table(conn, "importjob", [
             ("progress_current", "INTEGER DEFAULT 0"),

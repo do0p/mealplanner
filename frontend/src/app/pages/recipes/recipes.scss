@@ -61,6 +61,37 @@
   gap: 1rem;
 }
 
+.recipe-card-wrap {
+  position: relative;
+}
+
+.fav-btn {
+  position: absolute;
+  top: .6rem;
+  right: .6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: .2rem;
+  opacity: .35;
+  transition: opacity .15s, transform .1s;
+  z-index: 1;
+
+  &:hover { opacity: .7; transform: scale(1.15); }
+  &.active { opacity: 1; }
+}
+
+.diet-badge {
+  padding: .1rem .5rem;
+  border-radius: 999px;
+  font-size: .72rem;
+
+  &.vegetarian { background: #dcfce7; color: #166534; }
+  &.vegan      { background: #d1fae5; color: #065f46; }
+}
+
 .recipe-card {
   display: block;
   background: var(--color-surface);

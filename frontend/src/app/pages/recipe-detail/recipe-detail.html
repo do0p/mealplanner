@@ -39,6 +39,21 @@
       </div>
     }
 
+    @if (!editing()) {
+      <div class="diet-tags">
+        @if (recipe()!.is_vegan) {
+          <span class="diet-tag vegan">🌿 Vegan</span>
+        } @else if (recipe()!.is_vegetarian) {
+          <span class="diet-tag vegetarian">🌱 Vegetarian</span>
+        }
+      </div>
+    } @else {
+      <div class="diet-toggles">
+        <label><input type="checkbox" [ngModel]="draftVegetarian()" (ngModelChange)="draftVegetarian.set($event)" /> Vegetarian</label>
+        <label><input type="checkbox" [ngModel]="draftVegan()" (ngModelChange)="draftVegan.set($event)" /> Vegan</label>
+      </div>
+    }
+
     @if (recipe()!.notes) {
       <p style="margin-bottom:1rem;color:var(--color-text-muted)">{{ recipe()!.notes }}</p>
     }

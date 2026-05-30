@@ -22,6 +22,9 @@ export class RecipesPage implements OnInit {
   selectedCourse = signal<string | null>(null);
   highProtein = signal(false);
   lowCalorie = signal(false);
+  vegetarian = signal(false);
+  vegan = signal(false);
+  favourites = signal(false);
   loading = signal(true);
 
   courses = computed(() => {
@@ -37,11 +40,17 @@ export class RecipesPage implements OnInit {
     const course = this.selectedCourse();
     const hp = this.highProtein();
     const lc = this.lowCalorie();
+    const veg = this.vegetarian();
+    const vgn = this.vegan();
+    const fav = this.favourites();
     return this.recipes().filter(r =>
       r.title.toLowerCase().includes(q) &&
       (course === null || r.course === course) &&
-      (!hp || (r.protein_per_person != null && r.protein_per_person >= this.HIGH_PROTEIN_G)) &&
-      (!lc || (r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL))
+      (!hp  || (r.protein_per_person != null && r.protein_per_person >= this.HIGH_PROTEIN_G)) &&
+      (!lc  || (r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL)) &&
+      (!veg || r.is_vegetarian) &&
+      (!vgn || r.is_vegan) &&
+      (!fav || r.is_favourite)
     );
   });
 
@@ -54,5 +63,13 @@ export class RecipesPage implements OnInit {
 
   toggleCourse(course: string) {
     this.selectedCourse.update(c => c === course ? null : course);
+  }
+
+  toggleFavourite(event: Event, r: RecipeSummary) {
+    event.preventDefault();
+    event.stopPropagation();
+    const next = !r.is_favourite;
+    this.recipes.update(list => list.map(x => x.id === r.id ? { ...x, is_favourite: next } : x));
+    this.api.updateRecipe(r.id, { is_favourite: next }).subscribe();
   }
 }

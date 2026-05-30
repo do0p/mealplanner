@@ -65,6 +65,10 @@ class Recipe(SQLModel, table=True):
     calories_per_person: float | None = None
     protein_per_person: float | None = None
 
+    is_vegetarian: bool = Field(default=False)
+    is_vegan: bool = Field(default=False)
+    is_favourite: bool = Field(default=False)
+
     verification_status: str = VERIFY_OK
     verification_notes: str | None = None
     status: str = RECIPE_DRAFT
@@ -146,6 +150,9 @@ class RecipeRead(BaseModel):
     course: str | None
     calories_per_person: float | None
     protein_per_person: float | None
+    is_vegetarian: bool
+    is_vegan: bool
+    is_favourite: bool
     verification_status: str
     verification_notes: str | None
     status: str
@@ -161,6 +168,9 @@ class RecipeSummary(BaseModel):
     course: str | None
     calories_per_person: float | None
     protein_per_person: float | None
+    is_vegetarian: bool
+    is_vegan: bool
+    is_favourite: bool
     verification_status: str
     status: str
     created_at: datetime
@@ -181,6 +191,9 @@ class RecipeUpdate(BaseModel):
     course: str | None = None
     calories_per_person: float | None = None
     protein_per_person: float | None = None
+    is_vegetarian: bool | None = None
+    is_vegan: bool | None = None
+    is_favourite: bool | None = None
     verification_status: str | None = None
     ingredients: list[IngredientWrite] | None = None
     steps: list[str] | None = None

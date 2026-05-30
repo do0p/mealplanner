@@ -26,6 +26,9 @@
       </div>
     }
     <div class="chips">
+      <button class="chip" [class.active]="favourites()" (click)="favourites.set(!favourites())">⭐ Favourites</button>
+      <button class="chip" [class.active]="vegetarian()" (click)="vegetarian.set(!vegetarian())">🌱 Vegetarian</button>
+      <button class="chip" [class.active]="vegan()" (click)="vegan.set(!vegan())">🌿 Vegan</button>
       <button class="chip" [class.active]="highProtein()" (click)="highProtein.set(!highProtein())">
         ≥ {{ HIGH_PROTEIN_G }}g protein
       </button>
@@ -45,27 +48,40 @@
   } @else {
     <div class="recipe-grid">
       @for (r of filtered(); track r.id) {
-        <a class="recipe-card" [routerLink]="['/recipes', r.id]">
-          <div class="recipe-card-title">{{ r.title }}</div>
-          <div class="recipe-card-meta">
-            @if (r.course) {
-              <span class="course-chip">{{ r.course }}</span>
-            }
-          </div>
-          @if (r.calories_per_person != null || r.protein_per_person != null) {
-            <div class="recipe-card-nutrition">
-              @if (r.calories_per_person != null) {
-                <span>{{ r.calories_per_person | number:'1.0-0' }} kcal</span>
+        <div class="recipe-card-wrap">
+          <a class="recipe-card" [routerLink]="['/recipes', r.id]">
+            <div class="recipe-card-title">{{ r.title }}</div>
+            <div class="recipe-card-meta">
+              @if (r.course) {
+                <span class="course-chip">{{ r.course }}</span>
               }
-              @if (r.protein_per_person != null) {
-                <span>{{ r.protein_per_person | number:'1.0-0' }}g protein</span>
+              @if (r.is_vegan) {
+                <span class="diet-badge vegan">🌿 vegan</span>
+              } @else if (r.is_vegetarian) {
+                <span class="diet-badge vegetarian">🌱 vegetarian</span>
               }
             </div>
-          }
-          @if (r.verification_status !== 'ok') {
-            <span class="badge {{ r.verification_status }}" style="margin-top:.5rem">{{ r.verification_status }}</span>
-          }
-        </a>
+            @if (r.calories_per_person != null || r.protein_per_person != null) {
+              <div class="recipe-card-nutrition">
+                @if (r.calories_per_person != null) {
+                  <span>{{ r.calories_per_person | number:'1.0-0' }} kcal</span>
+                }
+                @if (r.protein_per_person != null) {
+                  <span>{{ r.protein_per_person | number:'1.0-0' }}g protein</span>
+                }
+              </div>
+            }
+            @if (r.verification_status !== 'ok') {
+              <span class="badge {{ r.verification_status }}" style="margin-top:.5rem">{{ r.verification_status }}</span>
+            }
+          </a>
+          <button
+            class="fav-btn"
+            [class.active]="r.is_favourite"
+            (click)="toggleFavourite($event, r)"
+            title="{{ r.is_favourite ? 'Remove from favourites' : 'Add to favourites' }}"
+          >⭐</button>
+        </div>
       }
     </div>
   }
