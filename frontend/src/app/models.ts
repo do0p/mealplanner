@@ -22,6 +22,7 @@ export interface RecipeSummary {
   is_vegetarian: boolean;
   is_vegan: boolean;
   is_favourite: boolean;
+  is_want_to_try: boolean;
   status: string;
   created_at: string;
 }

@@ -34,10 +34,35 @@ export class PlannerPage implements OnInit {
   pickerSlot = signal<string | null>(null);
   pickerPeople = signal(2);
   pickerQuery = signal('');
+  pickerCourse = signal<string | null>(null);
+  pickerFavourites = signal(false);
+  pickerVegetarian = signal(false);
+  pickerVegan = signal(false);
+  pickerWantToTry = signal(false);
+
+  pickerCourses = computed(() => {
+    const seen = new Set<string>();
+    for (const r of this.allRecipes()) {
+      if (r.course) seen.add(r.course);
+    }
+    return [...seen].sort();
+  });
 
   pickerResults = computed(() => {
     const q = this.pickerQuery().toLowerCase();
-    return this.allRecipes().filter(r => r.title.toLowerCase().includes(q));
+    const course = this.pickerCourse();
+    const fav = this.pickerFavourites();
+    const veg = this.pickerVegetarian();
+    const vgn = this.pickerVegan();
+    const wtt = this.pickerWantToTry();
+    return this.allRecipes().filter(r =>
+      r.title.toLowerCase().includes(q) &&
+      (course === null || r.course === course) &&
+      (!fav || r.is_favourite) &&
+      (!veg || r.is_vegetarian) &&
+      (!vgn || r.is_vegan) &&
+      (!wtt || r.is_want_to_try)
+    );
   });
 
   // current plan entries indexed by slot key for O(1) lookup
@@ -82,6 +107,11 @@ export class PlannerPage implements OnInit {
     const existing = this.entryMap()[slotKey(day, meal)];
     this.pickerPeople.set(existing?.people ?? 2);
     this.pickerQuery.set('');
+    this.pickerCourse.set(null);
+    this.pickerFavourites.set(false);
+    this.pickerVegetarian.set(false);
+    this.pickerVegan.set(false);
+    this.pickerWantToTry.set(false);
   }
 
   closePicker() { this.pickerSlot.set(null); }

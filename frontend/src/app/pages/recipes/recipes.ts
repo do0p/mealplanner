@@ -25,6 +25,7 @@ export class RecipesPage implements OnInit {
   vegetarian = signal(false);
   vegan = signal(false);
   favourites = signal(false);
+  wantToTry = signal(false);
   sortAz = signal(false);
   loading = signal(true);
 
@@ -43,7 +44,8 @@ export class RecipesPage implements OnInit {
     this.lowCalorie() ||
     this.vegetarian() ||
     this.vegan() ||
-    this.favourites()
+    this.favourites() ||
+    this.wantToTry()
   );
 
   filtered = computed(() => {
@@ -54,6 +56,7 @@ export class RecipesPage implements OnInit {
     const veg = this.vegetarian();
     const vgn = this.vegan();
     const fav = this.favourites();
+    const wtt = this.wantToTry();
     let result = this.recipes().filter(r =>
       r.title.toLowerCase().includes(q) &&
       (course === null || r.course === course) &&
@@ -61,7 +64,8 @@ export class RecipesPage implements OnInit {
       (!lc  || (r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL)) &&
       (!veg || r.is_vegetarian) &&
       (!vgn || r.is_vegan) &&
-      (!fav || r.is_favourite)
+      (!fav || r.is_favourite) &&
+      (!wtt || r.is_want_to_try)
     );
     if (this.sortAz()) {
       result = [...result].sort((a, b) => a.title.localeCompare(b.title));
@@ -88,6 +92,7 @@ export class RecipesPage implements OnInit {
     this.vegetarian.set(false);
     this.vegan.set(false);
     this.favourites.set(false);
+    this.wantToTry.set(false);
   }
 
   toggleFavourite(event: Event, r: RecipeSummary) {
@@ -96,5 +101,13 @@ export class RecipesPage implements OnInit {
     const next = !r.is_favourite;
     this.recipes.update(list => list.map(x => x.id === r.id ? { ...x, is_favourite: next } : x));
     this.api.updateRecipe(r.id, { is_favourite: next }).subscribe();
+  }
+
+  toggleWantToTry(event: Event, r: RecipeSummary) {
+    event.preventDefault();
+    event.stopPropagation();
+    const next = !r.is_want_to_try;
+    this.recipes.update(list => list.map(x => x.id === r.id ? { ...x, is_want_to_try: next } : x));
+    this.api.updateRecipe(r.id, { is_want_to_try: next }).subscribe();
   }
 }

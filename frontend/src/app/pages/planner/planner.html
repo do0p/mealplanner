@@ -95,8 +95,18 @@
       </div>
       <input type="search" placeholder="Search recipes…"
         [ngModel]="pickerQuery()" (ngModelChange)="pickerQuery.set($event)"
-        style="margin-bottom:.75rem"
+        style="margin-bottom:.5rem"
       />
+      <div class="picker-chips">
+        @for (c of pickerCourses(); track c) {
+          <button class="picker-chip" [class.active]="pickerCourse() === c"
+            (click)="pickerCourse.update(cur => cur === c ? null : c)">{{ c }}</button>
+        }
+        <button class="picker-chip" [class.active]="pickerFavourites()" (click)="pickerFavourites.set(!pickerFavourites())">⭐</button>
+        <button class="picker-chip" [class.active]="pickerVegetarian()" (click)="pickerVegetarian.set(!pickerVegetarian())">🌱</button>
+        <button class="picker-chip" [class.active]="pickerVegan()" (click)="pickerVegan.set(!pickerVegan())">🌿</button>
+        <button class="picker-chip" [class.active]="pickerWantToTry()" (click)="pickerWantToTry.set(!pickerWantToTry())">🔖</button>
+      </div>
       <ul class="picker-list">
         @for (r of pickerResults(); track r.id) {
           <li (click)="pickRecipe(r)">

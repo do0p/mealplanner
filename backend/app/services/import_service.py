@@ -122,6 +122,7 @@ class ImportService:
                     is_vegetarian=r.is_vegetarian,
                     is_vegan=r.is_vegan,
                     is_favourite=r.is_favourite,
+                    is_want_to_try=r.is_want_to_try,
                 )
                 for r in recipes
             ]

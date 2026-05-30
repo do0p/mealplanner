@@ -63,6 +63,7 @@ class Recipe(SQLModel, table=True):
     is_vegetarian: bool = Field(default=False)
     is_vegan: bool = Field(default=False)
     is_favourite: bool = Field(default=False)
+    is_want_to_try: bool = Field(default=False)
 
     status: str = RECIPE_DRAFT
     created_at: datetime = Field(default_factory=_now)
@@ -146,6 +147,7 @@ class RecipeRead(BaseModel):
     is_vegetarian: bool
     is_vegan: bool
     is_favourite: bool
+    is_want_to_try: bool
     status: str
     created_at: datetime
     ingredients: list[IngredientRead]
@@ -162,6 +164,7 @@ class RecipeSummary(BaseModel):
     is_vegetarian: bool
     is_vegan: bool
     is_favourite: bool
+    is_want_to_try: bool
     status: str
     created_at: datetime
 
@@ -184,6 +187,7 @@ class RecipeUpdate(BaseModel):
     is_vegetarian: bool | None = None
     is_vegan: bool | None = None
     is_favourite: bool | None = None
+    is_want_to_try: bool | None = None
     ingredients: list[IngredientWrite] | None = None
     steps: list[str] | None = None
 

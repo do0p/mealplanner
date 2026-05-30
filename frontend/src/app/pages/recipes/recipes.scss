@@ -65,6 +65,25 @@
   position: relative;
 }
 
+.try-btn {
+  position: absolute;
+  top: .6rem;
+  right: 2.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: .2rem;
+  opacity: .45;
+  filter: grayscale(1);
+  transition: opacity .15s, transform .1s, filter .15s;
+  z-index: 1;
+
+  &:hover { opacity: .8; transform: scale(1.15); filter: grayscale(.3); }
+  &.active { opacity: 1; filter: grayscale(0); }
+}
+
 .fav-btn {
   position: absolute;
   top: .6rem;

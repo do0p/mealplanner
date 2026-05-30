@@ -76,6 +76,7 @@ def _migrate(eng) -> None:
             ("is_vegetarian",       "BOOLEAN DEFAULT 0"),
             ("is_vegan",            "BOOLEAN DEFAULT 0"),
             ("is_favourite",        "BOOLEAN DEFAULT 0"),
+            ("is_want_to_try",     "BOOLEAN DEFAULT 0"),
         ])
         _migrate_table(conn, "importjob", [
             ("progress_current", "INTEGER DEFAULT 0"),

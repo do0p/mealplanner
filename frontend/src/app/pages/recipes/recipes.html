@@ -22,6 +22,7 @@
     }
     <div class="chips">
       <button class="chip" [class.active]="favourites()" (click)="favourites.set(!favourites())">⭐ Favourites</button>
+      <button class="chip" [class.active]="wantToTry()" (click)="wantToTry.set(!wantToTry())">🔖 Want to try</button>
       <button class="chip" [class.active]="vegetarian()" (click)="vegetarian.set(!vegetarian())">🌱 Vegetarian</button>
       <button class="chip" [class.active]="vegan()" (click)="vegan.set(!vegan())">🌿 Vegan</button>
       <button class="chip" [class.active]="highProtein()" (click)="highProtein.set(!highProtein())">
@@ -80,6 +81,12 @@
               </div>
             }
           </a>
+          <button
+            class="try-btn"
+            [class.active]="r.is_want_to_try"
+            (click)="toggleWantToTry($event, r)"
+            title="{{ r.is_want_to_try ? 'Remove from want to try' : 'Mark as want to try' }}"
+          >🔖</button>
           <button
             class="fav-btn"
             [class.active]="r.is_favourite"
