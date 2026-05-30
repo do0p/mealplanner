@@ -266,9 +266,9 @@ class OllamaRecipeExtractor(RecipeExtractor):
                         "role": "system",
                         "content": (
                             "You are a recipe extraction assistant. Rules:\n"
-                            "1. Copy instruction steps VERBATIM — do not paraphrase.\n"
-                            "2. Convert weights and temperatures to metric: "
-                            "oz→g (1 oz=28.35g), lb→g (1 lb=453g), °F→°C ((F-32)×5/9). "
+                            "1. Copy instruction steps VERBATIM — do not paraphrase. "
+                            "Exception: replace °F temperatures with °C inline (e.g. '375°F' → '190°C').\n"
+                            "2. Convert weights to metric: oz→g (1 oz=28.35g), lb→g (1 lb=453g). "
                             "Keep volumetric cooking measures as-is: cups, tablespoons (tbsp), teaspoons (tsp).\n"
                             "3. Ingredient quantities are as written in the recipe (for the "
                             "stated serving size — do NOT divide them yourself).\n"
