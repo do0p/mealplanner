@@ -4,7 +4,7 @@ import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { ApiService } from '../../api.service';
 import { ImportJob, LLMStatus, Recipe } from '../../models';
-import { SettingsService } from '../../settings.service';
+import { SettingsService, formatQty } from '../../settings.service';
 
 @Component({
   selector: 'app-import-page',
@@ -260,4 +260,6 @@ export class ImportPage implements OnInit, OnDestroy {
   formatDate(iso: string): string {
     return this.settings.formatDate(iso);
   }
+
+  formatQty = formatQty;
 }

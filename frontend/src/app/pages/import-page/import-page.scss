@@ -123,6 +123,13 @@
   color: var(--color-text);
 }
 
+.ingredient-list .ing-qty {
+  display: inline-block;
+  min-width: 3.5rem;
+  color: var(--color-text-muted);
+  font-size: .8rem;
+}
+
 .recipe-title { font-weight: 500; font-size: .9rem; }
 .error-text { color: var(--color-error); }
 

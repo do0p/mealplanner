@@ -3,13 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { Recipe } from '../../models';
-
-function formatQty(qty: number | null, unit: string | null): string {
-  if (qty == null) return '';
-  const u = unit === 'pcs' ? '' : (unit ?? '');
-  const r = unit === 'pcs' ? Math.ceil(qty - 1e-9) : qty >= 10 ? Math.round(qty) : Math.round(qty * 10) / 10;
-  return u ? `${r} ${u}` : `${r}`;
-}
+import { formatQty } from '../../settings.service';
 
 @Component({
   selector: 'app-recipe-detail',

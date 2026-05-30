@@ -174,10 +174,15 @@
                 <div class="recipe-detail-panel">
                   @if (detail.ingredients.length > 0) {
                     <div class="detail-section">
-                      <div class="detail-label">Ingredients</div>
+                      <div class="detail-label">Ingredients <span style="font-weight:400;text-transform:none;letter-spacing:0">(per person)</span></div>
                       <ul class="ingredient-list">
                         @for (ing of detail.ingredients; track ing.id) {
-                          <li>{{ ing.raw_text ?? ing.name }}</li>
+                          <li>
+                            @if (ing.quantity_per_person != null) {
+                              <span class="ing-qty">{{ formatQty(ing.quantity_per_person, ing.unit) }}</span>
+                            }
+                            {{ ing.name }}
+                          </li>
                         }
                       </ul>
                     </div>

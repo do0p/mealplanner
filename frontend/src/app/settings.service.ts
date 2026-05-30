@@ -12,6 +12,13 @@ export const TIMEZONES = [
   { value: 'America/Los_Angeles',  label: 'Los Angeles (PT)' },
 ];
 
+export function formatQty(qty: number | null, unit: string | null): string {
+  if (qty == null) return '';
+  const u = unit === 'pcs' ? '' : (unit ?? '');
+  const r = unit === 'pcs' ? Math.ceil(qty - 1e-9) : qty >= 10 ? Math.round(qty) : Math.round(qty * 10) / 10;
+  return u ? `${r} ${u}` : `${r}`;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
   readonly timezone = signal<string>(localStorage.getItem(TZ_KEY) ?? DEFAULT_TZ);
