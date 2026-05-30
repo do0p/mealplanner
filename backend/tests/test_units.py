@@ -86,3 +86,10 @@ def test_convert_step_text():
     assert units.convert_step_text("Simmer at 100°C.") == "Simmer at 100°C."
     assert units.convert_step_text("No temperature here.") == "No temperature here."
     assert units.convert_step_text("Preheat to 400°F and 425°F.") == "Preheat to 200°C and 220°C."
+    # inch → cm
+    assert units.convert_step_text("Cut into 2-inch pieces.") == "Cut into 5 cm pieces."
+    assert units.convert_step_text("Roll out to 1/4-inch thickness.") == "Roll out to 0.5 cm thickness."
+    assert units.convert_step_text("A 1 inch layer.") == "A 2.5 cm layer."
+    assert units.convert_step_text("8 inches in diameter.") == "20 cm in diameter."
+    assert units.convert_step_text('Use a 12" pan.') == "Use a 30 cm pan."
+    assert units.convert_step_text("No measurements here.") == "No measurements here."

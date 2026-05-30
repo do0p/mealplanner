@@ -102,12 +102,35 @@ def fahrenheit_to_celsius(f: float) -> float:
     return (f - 32.0) * 5.0 / 9.0
 
 
+def _parse_frac(s: str) -> float:
+    if '/' in s:
+        num, den = s.split('/', 1)
+        return float(num) / float(den)
+    return float(s)
+
+
+def _round_cm(cm: float) -> float:
+    if cm >= 10:
+        return float(round(cm))
+    rounded = round(cm * 2) / 2
+    return float(int(rounded) if rounded == int(rounded) else rounded)
+
+
 _FAHRENHEIT_RE = _re.compile(r'(\d+(?:\.\d+)?)\s*°?\s*F\b')
+_INCH_RE = _re.compile(r'(\d+(?:\.\d+)?|\d+/\d+)\s*-?\s*(?:inch(?:es)?|")', _re.IGNORECASE)
 
 
 def convert_step_text(text: str) -> str:
-    """Replace °F temperatures with °C in a recipe step string."""
-    def _replace(m: _re.Match) -> str:
+    """Replace °F with °C and inch measurements with cm in a recipe step string."""
+    def _replace_f(m: _re.Match) -> str:
         c = fahrenheit_to_celsius(float(m.group(1)))
         return f"{round(c / 10) * 10}°C"
-    return _FAHRENHEIT_RE.sub(_replace, text)
+
+    def _replace_inch(m: _re.Match) -> str:
+        cm = _parse_frac(m.group(1)) * 2.54
+        val = _round_cm(cm)
+        return f"{int(val) if val == int(val) else val} cm"
+
+    text = _FAHRENHEIT_RE.sub(_replace_f, text)
+    text = _INCH_RE.sub(_replace_inch, text)
+    return text
