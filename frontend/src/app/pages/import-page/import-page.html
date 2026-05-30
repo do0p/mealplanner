@@ -140,22 +140,54 @@
           </div>
         }
         @for (r of job.recipes; track r.id) {
-          <div class="recipe-row">
-            <div>
-              <span class="recipe-title">{{ r.title }}</span>
-              @if (r.base_servings) {
-                <span class="text-muted" style="font-size:.8rem;margin-left:.4rem">serves {{ r.base_servings }}</span>
-              }
-              @if (r.verification_status !== 'ok') {
-                <span class="badge {{ r.verification_status }}" style="margin-left:.5rem">{{ r.verification_status }}</span>
-              }
+          <div class="recipe-card">
+            <div class="recipe-row" (click)="toggleRecipe(r.id)" style="cursor:pointer">
+              <div>
+                <span class="recipe-title">{{ r.title }}</span>
+                @if (r.base_servings) {
+                  <span class="text-muted" style="font-size:.8rem;margin-left:.4rem">serves {{ r.base_servings }}</span>
+                }
+                @if (r.verification_status !== 'ok') {
+                  <span class="badge {{ r.verification_status }}" style="margin-left:.5rem">{{ r.verification_status }}</span>
+                }
+              </div>
+              <div class="flex gap-1">
+                <span class="badge {{ r.status }}">{{ r.status }}</span>
+                @if (r.status === 'draft') {
+                  <button class="btn-secondary btn-sm" (click)="$event.stopPropagation(); acceptOne(job.id, r.id)">Accept</button>
+                }
+                <span class="expand-icon">{{ expandedRecipe() === r.id ? '▲' : '▼' }}</span>
+              </div>
             </div>
-            <div class="flex gap-1">
-              <span class="badge {{ r.status }}">{{ r.status }}</span>
-              @if (r.status === 'draft') {
-                <button class="btn-secondary btn-sm" (click)="acceptOne(job.id, r.id)">Accept</button>
+            @if (expandedRecipe() === r.id) {
+              @let detail = recipeDetails().get(r.id);
+              @if (!detail) {
+                <p class="text-muted" style="font-size:.8rem;padding:.5rem 0">Loading…</p>
+              } @else {
+                <div class="recipe-detail-panel">
+                  @if (detail.ingredients.length > 0) {
+                    <div class="detail-section">
+                      <div class="detail-label">Ingredients</div>
+                      <ul class="ingredient-list">
+                        @for (ing of detail.ingredients; track ing.id) {
+                          <li>{{ ing.raw_text ?? ing.name }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                  @if (detail.steps.length > 0) {
+                    <div class="detail-section">
+                      <div class="detail-label">Steps</div>
+                      <ol class="step-list">
+                        @for (step of detail.steps; track step.step_number) {
+                          <li>{{ step.text }}</li>
+                        }
+                      </ol>
+                    </div>
+                  }
+                </div>
               }
-            </div>
+            }
           </div>
         }
       </div>

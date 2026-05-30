@@ -3,7 +3,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { ApiService } from '../../api.service';
-import { ImportJob, LLMStatus } from '../../models';
+import { ImportJob, LLMStatus, Recipe } from '../../models';
 
 @Component({
   selector: 'app-import-page',
@@ -22,6 +22,8 @@ export class ImportPage implements OnInit, OnDestroy {
   processing = signal(false);
   retrying = signal<number | null>(null);
   expandedJob = signal<number | null>(null);
+  expandedRecipe = signal<number | null>(null);
+  recipeDetails = signal<Map<number, Recipe>>(new Map());
   uploadError = signal('');
   dragOver = signal(false);
   processedExpanded = signal(false);
@@ -96,6 +98,19 @@ export class ImportPage implements OnInit, OnDestroy {
       this.expandedJob.set(id);
       this.api.getJob(id).subscribe(j => {
         this.jobs.update(jobs => jobs.map(jj => jj.id === id ? j : jj));
+      });
+    }
+  }
+
+  toggleRecipe(id: number) {
+    if (this.expandedRecipe() === id) {
+      this.expandedRecipe.set(null);
+      return;
+    }
+    this.expandedRecipe.set(id);
+    if (!this.recipeDetails().has(id)) {
+      this.api.getRecipe(id).subscribe(r => {
+        this.recipeDetails.update(m => new Map(m).set(id, r));
       });
     }
   }

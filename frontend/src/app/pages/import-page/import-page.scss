@@ -80,6 +80,11 @@
   gap: .5rem;
 }
 
+.recipe-card {
+  border-bottom: 1px solid var(--color-border);
+  &:last-child { border-bottom: none; }
+}
+
 .recipe-row {
   display: flex;
   align-items: center;
@@ -87,6 +92,35 @@
   padding: .4rem 0;
   flex-wrap: wrap;
   gap: .5rem;
+}
+
+.recipe-detail-panel {
+  padding: .5rem 0 .75rem .75rem;
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.detail-section {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+
+.detail-label {
+  font-size: .75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--color-text-muted);
+}
+
+.ingredient-list, .step-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: .85rem;
+  line-height: 1.6;
+  color: var(--color-text);
 }
 
 .recipe-title { font-weight: 500; font-size: .9rem; }
