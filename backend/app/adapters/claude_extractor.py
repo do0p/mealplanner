@@ -75,6 +75,23 @@ _EXTRACT_TOOL = {
     },
 }
 
+_IMAGE_SYSTEM_PROMPT = (
+    "You are a recipe extraction assistant. Extract every recipe visible in the image, "
+    "then call submit_recipes with full structured data. Rules:\n"
+    "1. Copy instruction steps VERBATIM — do not paraphrase or convert anything.\n"
+    "2. Ingredient quantities are as written in the recipe (for the stated "
+    "serving size — do NOT divide them yourself).\n"
+    "3. For each ingredient supply: name, quantity (number or null), "
+    "unit (exactly as written, or null), category (produce/dairy/meat/seafood/bakery/"
+    "pantry/spices/frozen/beverages), raw_text (original text).\n"
+    "4. Set course to one of: breakfast, appetizer, soup, salad, main, "
+    "side, dessert, snack, beverage.\n"
+    "5. Estimate total calories (kcal) and protein (g) for the whole recipe "
+    "as written (before dividing by servings). If the image explicitly states "
+    "per-serving values, capture those in calories_per_serving and protein_g_per_serving.\n"
+    "6. Set page_numbers to [1] for all recipes."
+)
+
 _SYSTEM_PROMPT = (
     "You are a recipe extraction assistant. For every recipe in the document, "
     "call submit_recipes with full structured data. Rules:\n"
@@ -91,6 +108,68 @@ _SYSTEM_PROMPT = (
     "per-serving values, capture those in calories_per_serving and protein_g_per_serving.\n"
     "6. page_numbers must reference the [Page N] markers in the source text."
 )
+
+
+_SUPPORTED_MIME = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+_MAX_IMAGE_BYTES = 4_500_000  # leave headroom below Claude's 5 MB limit
+_MAX_IMAGE_PX = 1568
+
+
+def _image_media_type(data: bytes) -> str:
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if data[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if data[:4] == b"GIF8":
+        return "image/gif"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return "image/jpeg"
+
+
+def _prepare_image(data: bytes) -> tuple[bytes, str]:
+    """Return (image_bytes, mime_type) sized and formatted for Claude vision."""
+    import io
+    from PIL import Image
+
+    mt = _image_media_type(data)
+    needs_resize = len(data) > _MAX_IMAGE_BYTES
+    needs_convert = mt not in _SUPPORTED_MIME
+
+    if not needs_resize and not needs_convert:
+        try:
+            img = Image.open(io.BytesIO(data))
+            if max(img.size) <= _MAX_IMAGE_PX:
+                return data, mt
+            needs_resize = True
+        except Exception:
+            return data, mt
+
+    img = Image.open(io.BytesIO(data))
+    if img.mode == "RGBA":
+        bg = Image.new("RGB", img.size, (255, 255, 255))
+        bg.paste(img, mask=img.split()[3])
+        img = bg
+    elif img.mode not in ("RGB", "L"):
+        img = img.convert("RGB")
+
+    w, h = img.size
+    if max(w, h) > _MAX_IMAGE_PX:
+        ratio = _MAX_IMAGE_PX / max(w, h)
+        img = img.resize((int(w * ratio), int(h * ratio)), Image.LANCZOS)
+
+    out_fmt = "PNG" if mt == "image/png" else "JPEG"
+    out_mime = "image/png" if out_fmt == "PNG" else "image/jpeg"
+    quality = 88
+    while True:
+        buf = io.BytesIO()
+        save_kwargs: dict = {"format": out_fmt}
+        if out_fmt == "JPEG":
+            save_kwargs["quality"] = quality
+        img.save(buf, **save_kwargs)
+        if buf.tell() <= _MAX_IMAGE_BYTES or quality <= 40:
+            return buf.getvalue(), out_mime
+        quality -= 10
 
 
 def _build_text(segments: list[tuple[int, str]]) -> str:
@@ -202,6 +281,94 @@ class ClaudeRecipeExtractor(RecipeExtractor):
                 on_progress("extracting", i + 1, total_chunks)
 
         return ordered, any_truncated
+
+    @property
+    def supports_image_extraction(self) -> bool:
+        return True
+
+    def extract_from_image(
+        self,
+        data: bytes,
+        on_progress: Callable[[str, int, int], None] | None = None,
+    ) -> list[ExtractedRecipe]:
+        import base64
+        if on_progress:
+            on_progress("extracting", 0, 1)
+
+        image_bytes, mime_type = _prepare_image(data)
+        b64 = base64.standard_b64encode(image_bytes).decode()
+        logger.info("Claude image extract: %d bytes, mime=%s", len(image_bytes), mime_type)
+        t0 = time.monotonic()
+        try:
+            resp = self._client().messages.create(
+                model=settings.anthropic_model,
+                max_tokens=settings.anthropic_max_output_tokens,
+                system=_IMAGE_SYSTEM_PROMPT,
+                tools=[_EXTRACT_TOOL],
+                tool_choice={"type": "tool", "name": "submit_recipes"},
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {"type": "base64", "media_type": mime_type, "data": b64},
+                        },
+                        {"type": "text", "text": "Extract every recipe from this image."},
+                    ],
+                }],
+            )
+        except Exception:
+            logger.exception("Claude image extract: API call failed")
+            raise
+
+        elapsed = time.monotonic() - t0
+        logger.info(
+            "Claude image extract: %.1fs, in=%d out=%d tokens, stop_reason=%s",
+            elapsed, resp.usage.input_tokens, resp.usage.output_tokens, resp.stop_reason,
+        )
+
+        tool_block = next((b for b in resp.content if b.type == "tool_use"), None)
+        if tool_block is None:
+            logger.warning("Claude image extract: no tool_use block in response")
+            if on_progress:
+                on_progress("extracting", 1, 1)
+            return []
+
+        raw_recipes = tool_block.input.get("recipes", [])
+        result: list[ExtractedRecipe] = []
+        for data_item in (raw_recipes if isinstance(raw_recipes, list) else []):
+            if not isinstance(data_item, dict):
+                continue
+            ingredients = [
+                ExtractedIngredient(
+                    name=ing.get("name", ""),
+                    quantity=ing.get("quantity"),
+                    unit=ing.get("unit"),
+                    category=ing.get("category"),
+                    raw_text=ing.get("raw_text"),
+                )
+                for ing in (data_item.get("ingredients") or [])
+                if isinstance(ing, dict)
+            ]
+            nutrition = data_item.get("nutrition") or {}
+            result.append(ExtractedRecipe(
+                title=data_item.get("title", "Untitled"),
+                base_servings=data_item.get("servings"),
+                course=data_item.get("course"),
+                calories_total=nutrition.get("calories"),
+                protein_total=nutrition.get("protein_g"),
+                calories_per_serving_stated=nutrition.get("calories_per_serving"),
+                protein_per_serving_stated=nutrition.get("protein_g_per_serving"),
+                ingredients=ingredients,
+                steps=data_item.get("steps", []),
+                notes=data_item.get("notes"),
+                source_pages="1",
+            ))
+
+        logger.info("Claude image extract: %d recipe(s) extracted", len(result))
+        if on_progress:
+            on_progress("extracting", 1, 1)
+        return result
 
     def _extract_chunk(
         self, chunk_text: str, idx: int, total: int

@@ -3,6 +3,7 @@ uvicorn[standard]
 pydantic-settings
 python-multipart
 pypdf
+pillow
 ollama
 anthropic
 sqlmodel

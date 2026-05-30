@@ -44,3 +44,14 @@ class RecipeExtractor(ABC):
         recipes found — one item for a single-recipe doc, many for a cookbook.
         on_progress(phase, current, total) is called at each phase transition."""
         ...
+
+    @property
+    def supports_image_extraction(self) -> bool:
+        return False
+
+    def extract_from_image(
+        self,
+        data: bytes,
+        on_progress: Callable[[str, int, int], None] | None = None,
+    ) -> list[ExtractedRecipe]:
+        raise NotImplementedError(f"{self.__class__.__name__} does not support image extraction")

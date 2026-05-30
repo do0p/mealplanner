@@ -20,14 +20,14 @@
     (dragleave)="onDragLeave()"
     (drop)="onDrop($event)"
   >
-    <div class="drop-icon">📄</div>
-    <p>Drag &amp; drop PDF files here, or</p>
+    <div class="drop-icon">📄 🖼️</div>
+    <p>Drag &amp; drop PDF or image files here, or</p>
     <label class="btn-primary" style="cursor:pointer;display:inline-block;margin-top:.5rem">
       Browse files
-      <input type="file" accept=".pdf" multiple (change)="onFileChange($event)" style="display:none" />
+      <input type="file" accept=".pdf,image/jpeg,image/png,image/webp,image/gif" multiple (change)="onFileChange($event)" style="display:none" />
     </label>
     <p class="text-muted" style="margin-top:.5rem;font-size:.8rem">
-      Uploads are queued immediately — processing happens when you click "Process".
+      Supported: PDF, JPEG, PNG, WebP, GIF. Uploads are queued immediately — processing happens when you click "Process".
     </p>
     @if (uploading()) {
       <p class="text-muted mt-1">Uploading…</p>

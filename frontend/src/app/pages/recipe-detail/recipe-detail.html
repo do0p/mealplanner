@@ -21,7 +21,7 @@
         @if (!editing()) {
           @if (recipe()!.source_file) {
             <a [href]="sourceUrl()" target="_blank" class="btn-secondary btn-sm" style="display:inline-flex;align-items:center;padding:.35rem .75rem">
-              Open PDF
+              View source
             </a>
           }
           <button class="btn-secondary btn-sm" (click)="startEdit()">Edit</button>

@@ -86,7 +86,8 @@ class ImportService:
     # ------------------------------------------------------------------
     def upload(self, file_bytes: bytes, filename: str) -> ImportJobSummary:
         fmt = detect_format(file_bytes, filename)
-        if not self._registry.has(fmt):
+        image_ok = fmt == "image" and self._extractor.supports_image_extraction
+        if not self._registry.has(fmt) and not image_ok:
             raise UnsupportedFormatError(fmt)
 
         settings.uploads_dir.mkdir(parents=True, exist_ok=True)
@@ -180,8 +181,6 @@ class ImportService:
             try:
                 file_path = settings.uploads_dir / job.stored_file
                 data = file_path.read_bytes()
-                text_extractor = self._registry.get(job.source_format)
-                segments = text_extractor.extract(data)
 
                 def _on_progress(phase: str, current: int, total: int) -> None:
                     if job_id in _ABORT_REQUESTED:
@@ -193,9 +192,16 @@ class ImportService:
                     session.add(job)
                     session.commit()
 
-                extracted = self._extractor.extract_recipes(
-                    segments, on_progress=_on_progress
-                )
+                if job.source_format == "image":
+                    extracted = self._extractor.extract_from_image(
+                        data, on_progress=_on_progress
+                    )
+                else:
+                    text_extractor = self._registry.get(job.source_format)
+                    segments = text_extractor.extract(data)
+                    extracted = self._extractor.extract_recipes(
+                        segments, on_progress=_on_progress
+                    )
                 saved = [self._save_recipe(session, job.id, r) for r in extracted]
                 job.recipe_count = len(saved)
                 job.status = JOB_COMPLETED

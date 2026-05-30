@@ -24,6 +24,16 @@ class FakeRecipeExtractor(RecipeExtractor):
     def is_available(self) -> bool:
         return True
 
+    @property
+    def supports_image_extraction(self) -> bool:
+        return True
+
+    def extract_from_image(self, data: bytes, on_progress=None) -> list:
+        if on_progress:
+            on_progress("extracting", 0, 1)
+            on_progress("extracting", 1, 1)
+        return self._recipes
+
     def extract_recipes(
         self,
         segments: list[tuple[int, str]],
