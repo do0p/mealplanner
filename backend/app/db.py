@@ -24,9 +24,48 @@ def init_db() -> None:
     _migrate(engine)
 
 
+def _drop_verification_columns(conn) -> None:
+    """Remove verification_status / verification_notes from the recipe table.
+
+    SQLite cannot ALTER COLUMN, so we use the standard table-rebuild technique.
+    This is a one-shot migration: if neither column is present the function is a no-op.
+    """
+    rows = conn.execute(text("PRAGMA table_info(recipe)")).fetchall()
+    # rows: (cid, name, type, notnull, dflt_value, pk)
+    if not any(r[1] in ("verification_status", "verification_notes") for r in rows):
+        return
+
+    REMOVE = {"verification_status", "verification_notes"}
+    keep = [r for r in rows if r[1] not in REMOVE]
+
+    def _col_sql(r: tuple) -> str:
+        _, name, typ, notnull, dflt, pk = r
+        parts = [f'"{name}"', typ or "TEXT"]
+        if pk == 1:
+            parts.append("PRIMARY KEY")
+        else:
+            if notnull:
+                parts.append("NOT NULL")
+            if dflt is not None:
+                parts.append(f"DEFAULT {dflt}")
+        return " ".join(parts)
+
+    col_defs   = ", ".join(_col_sql(r) for r in keep)
+    keep_names = ", ".join(f'"{r[1]}"' for r in keep)
+
+    conn.execute(text("PRAGMA foreign_keys=OFF"))
+    conn.execute(text("DROP TABLE IF EXISTS recipe_v2"))
+    conn.execute(text(f"CREATE TABLE recipe_v2 ({col_defs})"))
+    conn.execute(text(f"INSERT INTO recipe_v2 ({keep_names}) SELECT {keep_names} FROM recipe"))
+    conn.execute(text("DROP TABLE recipe"))
+    conn.execute(text("ALTER TABLE recipe_v2 RENAME TO recipe"))
+    conn.execute(text("PRAGMA foreign_keys=ON"))
+
+
 def _migrate(eng) -> None:
     """Apply additive schema changes that create_all cannot handle."""
     with eng.connect() as conn:
+        _drop_verification_columns(conn)
         _migrate_table(conn, "recipe", [
             ("import_job_id",       "INTEGER REFERENCES importjob(id)"),
             ("source_pages",        "VARCHAR"),
