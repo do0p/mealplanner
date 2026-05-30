@@ -87,7 +87,20 @@ def test_format_quantity():
     assert units.format_quantity(200, "g") == "200 g"
     assert units.format_quantity(3, "pcs") == "3"
     assert units.format_quantity(None, "pcs") == ""
-    assert units.format_quantity(1.5, "tbsp") == "1.5 tbsp"
+    # Non-metric: fractions
+    assert units.format_quantity(1.5, "tbsp") == "1 1/2 tbsp"
+    assert units.format_quantity(0.5, "cup") == "1/2 cup"
+    assert units.format_quantity(0.25, "cup") == "1/4 cup"
+    assert units.format_quantity(1.0 / 3, "cup") == "1/3 cup"
+    assert units.format_quantity(2.0 / 3, "cup") == "2/3 cup"
+    assert units.format_quantity(0.75, "cup") == "3/4 cup"
+    assert units.format_quantity(2.5, "tbsp") == "2 1/2 tbsp"
+    # LLM-rounded approximations
+    assert units.format_quantity(0.3, "cup") == "1/3 cup"
+    assert units.format_quantity(0.6, "cup") == "2/3 cup"
+    # Metric: no fractions
+    assert units.format_quantity(0.5, "g") == "0.5 g"
+    assert units.format_quantity(150.5, "ml") == "150 ml"  # rounded to nearest 5
 
 
 def test_fahrenheit_to_celsius():

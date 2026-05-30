@@ -36,6 +36,7 @@ export class RecipeDetailPage implements OnInit {
   draftTitle = signal('');
   draftIngredients = signal<IngredientDraft[]>([]);
   draftSteps = signal<string[]>([]);
+  draftCourse = signal<string | null>(null);
   draftVegetarian = signal(false);
   draftVegan = signal(false);
 
@@ -80,6 +81,7 @@ export class RecipeDetailPage implements OnInit {
       raw_text: i.raw_text,
     })));
     this.draftSteps.set(r.steps.map(s => s.text));
+    this.draftCourse.set(r.course ?? null);
     this.draftVegetarian.set(r.is_vegetarian);
     this.draftVegan.set(r.is_vegan);
     this.editing.set(true);
@@ -94,6 +96,7 @@ export class RecipeDetailPage implements OnInit {
     this.saving.set(true);
     this.api.updateRecipe(r.id, {
       title: this.draftTitle(),
+      course: this.draftCourse() || null,
       ingredients: this.draftIngredients(),
       steps: this.draftSteps().filter(s => s.trim()),
       is_vegetarian: this.draftVegetarian(),

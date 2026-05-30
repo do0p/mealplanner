@@ -34,9 +34,22 @@
     </div>
 
     @if (editing()) {
-      <div class="diet-toggles">
-        <label><input type="checkbox" [ngModel]="draftVegetarian()" (ngModelChange)="draftVegetarian.set($event)" /> Vegetarian</label>
-        <label><input type="checkbox" [ngModel]="draftVegan()" (ngModelChange)="draftVegan.set($event)" /> Vegan</label>
+      <div class="edit-meta">
+        <div class="course-edit">
+          <label>Course</label>
+          <input list="course-options" type="text" placeholder="e.g. main, breakfast…"
+            [ngModel]="draftCourse() ?? ''"
+            (ngModelChange)="draftCourse.set($event || null)" />
+          <datalist id="course-options">
+            <option value="breakfast" /><option value="appetizer" /><option value="soup" />
+            <option value="salad" /><option value="main" /><option value="side" />
+            <option value="dessert" /><option value="snack" /><option value="beverage" />
+          </datalist>
+        </div>
+        <div class="diet-toggles">
+          <label><input type="checkbox" [ngModel]="draftVegetarian()" (ngModelChange)="draftVegetarian.set($event)" /> Vegetarian</label>
+          <label><input type="checkbox" [ngModel]="draftVegan()" (ngModelChange)="draftVegan.set($event)" /> Vegan</label>
+        </div>
       </div>
     } @else if (recipe()!.is_vegan || recipe()!.is_vegetarian) {
       <div class="diet-tags">

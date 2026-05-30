@@ -2,9 +2,41 @@ import { Injectable } from '@angular/core';
 
 const DEFAULT_TZ = 'Europe/Vienna';
 
+const FRACS: [number, string][] = [
+  [0.25,     '1/4'],
+  [1 / 3,    '1/3'],
+  [0.5,      '1/2'],
+  [2 / 3,    '2/3'],
+  [0.75,     '3/4'],
+];
+const FRAC_TOL = 0.07;
+
+function fracStr(frac: number): string | null {
+  let best: string | null = null;
+  let bestDist = FRAC_TOL;
+  for (const [val, label] of FRACS) {
+    const dist = Math.abs(frac - val);
+    if (dist < bestDist) { bestDist = dist; best = label; }
+  }
+  return best;
+}
+
 export function formatQty(qty: number | null, unit: string | null): string {
   const u = unit === 'pcs' ? '' : (unit ?? '');
   if (qty == null) return u;
+
+  // Non-metric culinary units: prefer fraction notation.
+  if (unit !== 'g' && unit !== 'ml' && unit !== 'pcs') {
+    const whole = Math.floor(qty);
+    const frac = qty - whole;
+    const label = fracStr(frac);
+    if (label) {
+      const q = whole > 0 ? `${whole} ${label}` : label;
+      return u ? `${q} ${u}` : q;
+    }
+  }
+
+  // Standard rounding for metric units or non-fractional values.
   let r: number;
   if (unit === 'pcs') {
     r = Math.ceil(qty - 1e-9);

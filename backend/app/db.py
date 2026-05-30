@@ -83,7 +83,21 @@ def _migrate(eng) -> None:
             ("progress_total",   "INTEGER DEFAULT 0"),
             ("phase",            "VARCHAR"),
         ])
+        _normalize_recipe_titles(conn)
         conn.commit()
+
+
+def _normalize_recipe_titles(conn) -> None:
+    """Title-case any recipe whose title is stored in ALL CAPS (PDF extraction artifact)."""
+    rows = conn.execute(text("SELECT id, title FROM recipe")).fetchall()
+    for recipe_id, title in rows:
+        if not title:
+            continue
+        if title == title.upper() and any(c.isalpha() for c in title):
+            conn.execute(
+                text("UPDATE recipe SET title = :t WHERE id = :id"),
+                {"t": title.strip().title(), "id": recipe_id},
+            )
 
 
 def _migrate_table(conn, table: str, columns: list[tuple[str, str]]) -> None:

@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
+import { RecipeFilterService } from '../../recipe-filter.service';
 import { RecipeSummary } from '../../models';
 
 @Component({
@@ -13,21 +14,24 @@ import { RecipeSummary } from '../../models';
 })
 export class RecipesPage implements OnInit {
   private api = inject(ApiService);
+  private filterSvc = inject(RecipeFilterService);
 
   readonly HIGH_PROTEIN_G = 40;
   readonly LOW_CALORIE_KCAL = 600;
 
   recipes = signal<RecipeSummary[]>([]);
-  query = signal('');
-  selectedCourse = signal<string | null>(null);
-  highProtein = signal(false);
-  lowCalorie = signal(false);
-  vegetarian = signal(false);
-  vegan = signal(false);
-  favourites = signal(false);
-  wantToTry = signal(false);
-  sortAz = signal(false);
   loading = signal(true);
+
+  // Expose filter service signals directly so the template is unchanged.
+  query = this.filterSvc.query;
+  selectedCourse = this.filterSvc.selectedCourse;
+  highProtein = this.filterSvc.highProtein;
+  lowCalorie = this.filterSvc.lowCalorie;
+  vegetarian = this.filterSvc.vegetarian;
+  vegan = this.filterSvc.vegan;
+  favourites = this.filterSvc.favourites;
+  wantToTry = this.filterSvc.wantToTry;
+  sortAz = this.filterSvc.sortAz;
 
   courses = computed(() => {
     const seen = new Set<string>();
@@ -85,14 +89,7 @@ export class RecipesPage implements OnInit {
   }
 
   clearFilters() {
-    this.query.set('');
-    this.selectedCourse.set(null);
-    this.highProtein.set(false);
-    this.lowCalorie.set(false);
-    this.vegetarian.set(false);
-    this.vegan.set(false);
-    this.favourites.set(false);
-    this.wantToTry.set(false);
+    this.filterSvc.clear();
   }
 
   toggleFavourite(event: Event, r: RecipeSummary) {

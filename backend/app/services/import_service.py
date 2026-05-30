@@ -35,6 +35,13 @@ from app.services import units
 
 logger = logging.getLogger(__name__)
 
+
+def _normalize_title(title: str) -> str:
+    t = title.strip()
+    if t and t == t.upper() and any(c.isalpha() for c in t):
+        return t.title()
+    return t
+
 # Job IDs for which the user has requested cancellation.
 # Module-level so it's shared across all ImportService instances within the process.
 _ABORT_REQUESTED: set[int] = set()
@@ -218,7 +225,7 @@ class ImportService:
     ) -> Recipe:
         servings = ext.base_servings or 1
         recipe = Recipe(
-            title=ext.title,
+            title=_normalize_title(ext.title),
             base_servings=ext.base_servings,
             notes=ext.notes,
             course=ext.course,

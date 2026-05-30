@@ -57,6 +57,28 @@ _OZ_STEP_RE = _re.compile(
 )
 
 
+_FRAC_TOL = 0.07
+_COMMON_FRACS: list[tuple[float, str]] = [
+    (0.25,     "1/4"),
+    (1.0 / 3,  "1/3"),
+    (0.5,      "1/2"),
+    (2.0 / 3,  "2/3"),
+    (0.75,     "3/4"),
+]
+
+
+def _frac_str(frac: float) -> str | None:
+    """Return the closest common fraction label if within tolerance, else None."""
+    best_label: str | None = None
+    best_dist = _FRAC_TOL
+    for val, label in _COMMON_FRACS:
+        dist = abs(frac - val)
+        if dist < best_dist:
+            best_dist = dist
+            best_label = label
+    return best_label
+
+
 def _clean(unit: str) -> str:
     return " ".join(unit.strip().lower().rstrip(".").split())
 
@@ -117,10 +139,23 @@ def round_quantity(quantity: float | None, unit: str | None) -> float | None:
 
 
 def format_quantity(quantity: float | None, unit: str | None) -> str:
-    """Human-readable amount, e.g. '200 g', '3', '1.5 tbsp'. The count unit is
-    omitted since the ingredient name already carries it ('3 eggs')."""
+    """Human-readable amount, e.g. '200 g', '3', '1 1/2 tbsp'. The count unit is
+    omitted since the ingredient name already carries it ('3 eggs').
+    Non-metric units use fraction notation (1/2, 1/3, 2/3, 1/4, 3/4) where applicable."""
     if quantity is None:
         q = ""
+    elif unit == CANON_COUNT:
+        q = str(int(math.ceil(quantity - 1e-9)))
+    elif unit not in (CANON_MASS, CANON_VOLUME):
+        # Non-metric culinary units: prefer fraction notation.
+        whole = int(quantity)
+        frac = quantity - whole
+        label = _frac_str(frac)
+        if label:
+            q = f"{whole} {label}".strip() if whole else label
+        else:
+            r = round_quantity(quantity, unit)
+            q = str(int(r)) if float(r).is_integer() else str(r)
     else:
         r = round_quantity(quantity, unit)
         q = str(int(r)) if float(r).is_integer() else str(r)
