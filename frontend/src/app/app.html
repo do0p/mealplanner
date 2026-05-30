@@ -2,12 +2,15 @@
   <a class="nav-brand" routerLink="/recipes">🍽 Mealplanner</a>
   <div class="nav-links">
     <a routerLink="/recipes" routerLinkActive="active">Recipes</a>
-    <a routerLink="/import" routerLinkActive="active">Import</a>
     <a routerLink="/planner" routerLinkActive="active">Planner</a>
   </div>
-  <span class="nav-version">v{{ version }}</span>
+  <div class="nav-right">
+    <a routerLink="/import" routerLinkActive="active">Import</a>
+  </div>
 </nav>
 
 <main>
   <router-outlet />
 </main>
+
+<footer class="app-footer">v{{ version }}</footer>
