@@ -17,6 +17,11 @@ export class ApiService {
   private http = inject(HttpClient);
   private base = environment.apiUrl;
 
+  // ── Config ───────────────────────────────────────────────────────────────
+  getVersion(): Observable<{ version: string; display_timezone: string }> {
+    return this.http.get<{ version: string; display_timezone: string }>(`${this.base}/version`);
+  }
+
   // ── Recipes ──────────────────────────────────────────────────────────────
   getRecipes(status = 'accepted'): Observable<RecipeSummary[]> {
     return this.http.get<RecipeSummary[]>(`${this.base}/recipes/?status=${status}`);

@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     anthropic_chunk_tokens: int = 5000
     anthropic_max_output_tokens: int = 16384
 
+    # IANA timezone name used for display in the frontend.
+    display_timezone: str = "Europe/Vienna"
+
     # Everything persistent lives under data_dir (sqlite db + uploaded files).
     data_dir: str = "./data"
 

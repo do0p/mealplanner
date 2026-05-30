@@ -49,7 +49,8 @@ app.add_middleware(
 
 @app.get("/version")
 def version():
-    return {"version": APP_VERSION}
+    from app.config import settings
+    return {"version": APP_VERSION, "display_timezone": settings.display_timezone}
 
 
 @app.get("/health")
