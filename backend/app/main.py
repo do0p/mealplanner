@@ -7,6 +7,17 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+
+class SPAStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        try:
+            return await super().get_response(path, scope)
+        except StarletteHTTPException as e:
+            if e.status_code == 404:
+                return await super().get_response("index.html", scope)
+            raise
 
 from app.db import init_db
 
@@ -58,7 +69,7 @@ app.include_router(imports.router)
 # on :4200, so the dist dir may not exist — don't fail startup if it's missing.
 _frontend_dist = os.path.join(os.path.dirname(__file__), "../frontend-dist")
 if os.path.isdir(_frontend_dist):
-    app.mount("/", StaticFiles(directory=_frontend_dist, html=True), name="static")
+    app.mount("/", SPAStaticFiles(directory=_frontend_dist, html=True), name="static")
 else:
     @app.get("/")
     def _root():
