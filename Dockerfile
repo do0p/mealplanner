@@ -18,7 +18,7 @@ COPY --from=frontend-build /backend/frontend-dist/ ./frontend-dist/
 
 VOLUME ["/app/data"]
 
-ENV LLM_PROVIDER=ollama
+ENV LLM_PROVIDER=anthropic
 
 ENV OLLAMA_BASE_URL=http://host.docker.internal:11434
 ENV OLLAMA_MODEL=qwen3:4b

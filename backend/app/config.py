@@ -8,7 +8,7 @@ class Settings(BaseSettings):
 
     # The LLM is only contacted at recipe import/parsing time. The app runs fine
     # without it; only new imports are blocked while it is unreachable.
-    llm_provider: str = "ollama"  # "ollama" or "anthropic"
+    llm_provider: str = "anthropic"  # "ollama" or "anthropic"
 
     ollama_base_url: str = "http://172.17.176.1:11434"
     ollama_model: str = "qwen3:4b"
