@@ -223,8 +223,16 @@ class ImportService:
             base_servings=ext.base_servings,
             notes=ext.notes,
             course=ext.course,
-            calories_per_person=round(ext.calories_total / servings, 1) if ext.calories_total else None,
-            protein_per_person=round(ext.protein_total / servings, 1) if ext.protein_total else None,
+            calories_per_person=(
+                round(ext.calories_per_serving_stated, 1) if ext.calories_per_serving_stated
+                else round(ext.calories_total / servings, 1) if ext.calories_total
+                else None
+            ),
+            protein_per_person=(
+                round(ext.protein_per_serving_stated, 1) if ext.protein_per_serving_stated
+                else round(ext.protein_total / servings, 1) if ext.protein_total
+                else None
+            ),
             source_pages=ext.source_pages,
             raw_source_text=ext.raw_source_text,
             verification_status=ext.verification_status,

@@ -61,6 +61,8 @@ _EXTRACT_TOOL = {
                             "properties": {
                                 "calories": {"type": "number"},
                                 "protein_g": {"type": "number"},
+                                "calories_per_serving": {"type": "number"},
+                                "protein_g_per_serving": {"type": "number"},
                             },
                             "required": ["calories", "protein_g"],
                         },
@@ -85,7 +87,8 @@ _SYSTEM_PROMPT = (
     "4. Set course to one of: breakfast, appetizer, soup, salad, main, "
     "side, dessert, snack, beverage.\n"
     "5. Estimate total calories (kcal) and protein (g) for the whole recipe "
-    "as written (before dividing by servings).\n"
+    "as written (before dividing by servings). If the text also explicitly states "
+    "per-serving values, capture those in calories_per_serving and protein_g_per_serving.\n"
     "6. page_numbers must reference the [Page N] markers in the source text."
 )
 
@@ -309,6 +312,8 @@ class ClaudeRecipeExtractor(RecipeExtractor):
                 course=data.get("course"),
                 calories_total=nutrition.get("calories"),
                 protein_total=nutrition.get("protein_g"),
+                calories_per_serving_stated=nutrition.get("calories_per_serving"),
+                protein_per_serving_stated=nutrition.get("protein_g_per_serving"),
                 ingredients=ingredients,
                 steps=data.get("steps", []),
                 notes=data.get("notes"),
