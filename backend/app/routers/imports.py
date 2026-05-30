@@ -1,7 +1,8 @@
 import logging
+import mimetypes
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from app.adapters.extractor_registry import UnsupportedFormatError
 from app.dependencies import get_import_service
@@ -49,6 +50,18 @@ def process_pending(
     for jid in job_ids:
         background.add_task(svc.process_job, jid)
     return {"queued": len(job_ids), "job_ids": job_ids}
+
+
+@router.get("/{job_id}/source")
+def get_source(job_id: int, svc: ImportService = Depends(get_import_service)):
+    result = svc.get_source_path(job_id)
+    if result is None:
+        raise HTTPException(404, "Import job not found")
+    path, filename = result
+    if not path.exists():
+        raise HTTPException(404, "Source file not available")
+    media_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+    return FileResponse(str(path), media_type=media_type, filename=filename)
 
 
 @router.get("/{job_id}", response_model=ImportJobRead)

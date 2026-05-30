@@ -43,6 +43,10 @@ export class ApiService {
     return `${this.base}/recipes/${id}/source`;
   }
 
+  importJobSourceUrl(id: number): string {
+    return `${this.base}/imports/${id}/source`;
+  }
+
   // ── Plans ─────────────────────────────────────────────────────────────────
   getPlans(): Observable<PlanSummary[]> {
     return this.http.get<PlanSummary[]>(`${this.base}/plans/`);

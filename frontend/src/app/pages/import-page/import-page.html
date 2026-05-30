@@ -86,7 +86,7 @@
   <div class="job-item card">
     <div class="job-header" (click)="expandJob(job.id)">
       <div>
-        <span class="job-filename">{{ job.filename }}</span>
+        <a class="job-filename" [href]="api.importJobSourceUrl(job.id)" [download]="job.filename" (click)="$event.stopPropagation()">{{ job.filename }}</a>
         <span class="text-muted" style="font-size:.8rem;margin-left:.5rem">{{ formatDate(job.created_at) }}</span>
       </div>
       <div class="flex gap-1">

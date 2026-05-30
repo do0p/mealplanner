@@ -13,7 +13,7 @@ import { SettingsService, formatQty } from '../../settings.service';
   styleUrl: './import-page.scss',
 })
 export class ImportPage implements OnInit, OnDestroy {
-  private api = inject(ApiService);
+  api = inject(ApiService);
   private settings = inject(SettingsService);
   private pollSub?: Subscription;
   private jobPollSub?: Subscription;

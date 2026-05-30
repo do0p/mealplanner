@@ -68,7 +68,12 @@
     }
   }
 
-  .job-filename { font-weight: 600; }
+  .job-filename {
+    font-weight: 600;
+    color: var(--color-text);
+    text-decoration: none;
+    &:hover { color: var(--color-primary); text-decoration: underline; }
+  }
   .expand-icon { font-size: .7rem; color: var(--color-text-muted); }
 }
 

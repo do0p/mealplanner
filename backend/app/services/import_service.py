@@ -275,6 +275,17 @@ class ImportService:
         return recipe
 
     # ------------------------------------------------------------------
+    # Source file path for a job
+    # ------------------------------------------------------------------
+    def get_source_path(self, job_id: int) -> tuple[Path, str] | None:
+        """Return (absolute_path, original_filename) or None if not found."""
+        with self._sf() as session:
+            job = session.get(ImportJob, job_id)
+            if job is None:
+                return None
+            return settings.uploads_dir / job.stored_file, job.filename
+
+    # ------------------------------------------------------------------
     # Abort a processing job (resets it to pending)
     # ------------------------------------------------------------------
     def abort_job(self, job_id: int) -> bool:
