@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { Recipe } from '../../models';
 import { formatQty } from '../../settings.service';
+import { ToastService } from '../../toast.service';
 
 interface IngredientDraft {
   name: string;
@@ -23,6 +24,7 @@ export class RecipeDetailPage implements OnInit {
   private api = inject(ApiService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private toast = inject(ToastService);
 
   recipe = signal<Recipe | null>(null);
   loading = signal(true);
@@ -97,14 +99,22 @@ export class RecipeDetailPage implements OnInit {
       is_vegetarian: this.draftVegetarian(),
       is_vegan: this.draftVegan(),
     }).subscribe({
-      next: updated => { this.recipe.set(updated); this.editing.set(false); this.saving.set(false); },
-      error: () => this.saving.set(false),
+      next: updated => {
+        this.recipe.set(updated);
+        this.editing.set(false);
+        this.saving.set(false);
+        this.toast.show('Recipe saved');
+      },
+      error: () => { this.saving.set(false); this.toast.show('Save failed', 'error'); },
     });
   }
 
   approve() {
     const r = this.recipe()!;
-    this.api.updateRecipe(r.id, { verification_status: 'ok' }).subscribe(updated => this.recipe.set(updated));
+    this.api.updateRecipe(r.id, { verification_status: 'ok' }).subscribe({
+      next: updated => { this.recipe.set(updated); this.toast.show('Recipe approved'); },
+      error: () => this.toast.show('Could not approve', 'error'),
+    });
   }
 
   addIngredient() {
@@ -143,6 +153,9 @@ export class RecipeDetailPage implements OnInit {
     const r = this.recipe();
     if (!r || !confirm(`Delete "${r.title}"?`)) return;
     this.deleting.set(true);
-    this.api.deleteRecipe(r.id).subscribe(() => this.router.navigate(['/recipes']));
+    this.api.deleteRecipe(r.id).subscribe({
+      next: () => this.router.navigate(['/recipes']),
+      error: () => { this.deleting.set(false); this.toast.show('Delete failed', 'error'); },
+    });
   }
 }

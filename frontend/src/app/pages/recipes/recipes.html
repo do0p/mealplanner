@@ -35,8 +35,21 @@
       <button class="chip" [class.active]="lowCalorie()" (click)="lowCalorie.set(!lowCalorie())">
         ≤ {{ LOW_CALORIE_KCAL }} kcal
       </button>
+      <button class="chip" [class.active]="sortAz()" (click)="sortAz.set(!sortAz())">A–Z</button>
     </div>
+    @if (hasFilters()) {
+      <button class="clear-filters" (click)="clearFilters()">✕ Clear filters</button>
+    }
   </div>
+  @if (!loading()) {
+    <p class="result-count">
+      @if (hasFilters()) {
+        {{ filtered().length }} of {{ recipes().length }} recipes
+      } @else {
+        {{ recipes().length }} recipes
+      }
+    </p>
+  }
 
   @if (loading()) {
     <p class="text-muted">Loading…</p>
@@ -72,7 +85,7 @@
               </div>
             }
             @if (r.verification_status !== 'ok') {
-              <span class="badge {{ r.verification_status }}" style="margin-top:.5rem">{{ r.verification_status }}</span>
+              <span class="badge {{ r.verification_status }}" style="margin-top:.5rem">⚠ Review</span>
             }
           </a>
           <button

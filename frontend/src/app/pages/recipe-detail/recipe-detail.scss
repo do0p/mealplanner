@@ -90,6 +90,15 @@
   .ing-edit-name { flex: 1; }
 }
 
+.edit-ingredient-header {
+  font-size: .75rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  padding-bottom: .1rem;
+
+  span { display: block; }
+}
+
 .edit-step-list {
   display: flex;
   flex-direction: column;

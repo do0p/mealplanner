@@ -152,6 +152,9 @@
     flex: 1;
 
     li {
+      display: flex;
+      align-items: center;
+      gap: .4rem;
       padding: .55rem .6rem;
       border-radius: 6px;
       cursor: pointer;
@@ -160,4 +163,32 @@
       &:hover { background: var(--color-bg); }
     }
   }
+}
+
+.picker-title { flex: 1; }
+
+.picker-course {
+  font-size: .75rem;
+  background: #f1f5f9;
+  color: var(--color-text-muted);
+  padding: .1rem .45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.picker-diet {
+  font-size: .75rem;
+  padding: .1rem .45rem;
+  border-radius: 999px;
+  white-space: nowrap;
+
+  &.vegetarian { background: #dcfce7; color: #166534; }
+  &.vegan      { background: #d1fae5; color: #065f46; }
+}
+
+.plan-action-sep {
+  width: 1px;
+  height: 1.25rem;
+  background: var(--color-border);
+  margin: 0 .25rem;
 }

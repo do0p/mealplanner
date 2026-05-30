@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { ShoppingList } from '../../models';
@@ -17,6 +17,10 @@ export class ShoppingListPage implements OnInit {
   planId = signal(0);
   loading = signal(true);
   checked = signal<Set<string>>(new Set());
+
+  totalItems = computed(() =>
+    this.sl()?.categories.reduce((sum, cat) => sum + cat.items.length, 0) ?? 0
+  );
 
   ngOnInit() {
     const id = Number(this.route.snapshot.paramMap.get('planId'));
@@ -42,6 +46,8 @@ export class ShoppingListPage implements OnInit {
   itemKey(cat: string, name: string): string {
     return `${cat}::${name}`;
   }
+
+  uncheckAll() { this.checked.set(new Set()); }
 
   print() { window.print(); }
 }

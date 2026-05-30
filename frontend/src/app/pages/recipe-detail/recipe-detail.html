@@ -20,7 +20,7 @@
         @if (!editing()) {
           @if (recipe()!.source_file) {
             <a [href]="sourceUrl()" target="_blank" class="btn-secondary btn-sm" style="display:inline-flex;align-items:center;padding:.35rem .75rem">
-              View source
+              Open PDF
             </a>
           }
           <button class="btn-secondary btn-sm" (click)="startEdit()">Edit</button>
@@ -39,18 +39,18 @@
       </div>
     }
 
-    @if (!editing()) {
-      <div class="diet-tags">
-        @if (recipe()!.is_vegan) {
-          <span class="diet-tag vegan">🌿 Vegan</span>
-        } @else if (recipe()!.is_vegetarian) {
-          <span class="diet-tag vegetarian">🌱 Vegetarian</span>
-        }
-      </div>
-    } @else {
+    @if (editing()) {
       <div class="diet-toggles">
         <label><input type="checkbox" [ngModel]="draftVegetarian()" (ngModelChange)="draftVegetarian.set($event)" /> Vegetarian</label>
         <label><input type="checkbox" [ngModel]="draftVegan()" (ngModelChange)="draftVegan.set($event)" /> Vegan</label>
+      </div>
+    } @else if (recipe()!.is_vegan || recipe()!.is_vegetarian) {
+      <div class="diet-tags">
+        @if (recipe()!.is_vegan) {
+          <span class="diet-tag vegan">🌿 Vegan</span>
+        } @else {
+          <span class="diet-tag vegetarian">🌱 Vegetarian</span>
+        }
       </div>
     }
 
@@ -84,6 +84,14 @@
           </ul>
         } @else {
           <div class="edit-ingredient-list">
+            @if (draftIngredients().length > 0) {
+              <div class="edit-ingredient-row edit-ingredient-header">
+                <span class="ing-edit-qty">Qty</span>
+                <span class="ing-edit-unit">Unit</span>
+                <span class="ing-edit-name">Ingredient</span>
+                <span style="width:1.75rem"></span>
+              </div>
+            }
             @for (ing of draftIngredients(); track $index) {
               <div class="edit-ingredient-row">
                 <input class="ing-edit-qty" type="number" min="0" step="any" placeholder="qty"

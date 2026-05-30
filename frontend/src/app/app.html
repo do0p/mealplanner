@@ -16,3 +16,11 @@
 <footer class="app-footer">
   v{{ version }}
 </footer>
+
+@if (toast.toasts().length > 0) {
+  <div class="toast-container">
+    @for (t of toast.toasts(); track t.id) {
+      <div class="toast {{ t.type }}" (click)="toast.dismiss(t.id)">{{ t.message }}</div>
+    }
+  </div>
+}

@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { APP_VERSION } from './version';
 import { ApiService } from './api.service';
 import { SettingsService } from './settings.service';
+import { ToastService } from './toast.service';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,7 @@ export class App implements OnInit {
   version = APP_VERSION;
   private api = inject(ApiService);
   private settings = inject(SettingsService);
+  toast = inject(ToastService);
 
   ngOnInit(): void {
     this.api.getVersion().subscribe(v => {

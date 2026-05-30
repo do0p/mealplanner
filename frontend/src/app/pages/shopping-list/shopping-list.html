@@ -3,8 +3,16 @@
     <div>
       <a [routerLink]="['/planner']" class="text-muted" style="font-size:.85rem">← Back to planner</a>
       <h1 class="page-title" style="margin:.25rem 0 0">Shopping List</h1>
+      @if (totalItems() > 0) {
+        <p class="text-muted" style="margin-top:.2rem">{{ totalItems() }} items</p>
+      }
     </div>
-    <button class="btn-secondary" (click)="print()">🖨 Print</button>
+    <div class="flex gap-1">
+      @if (checked().size > 0) {
+        <button class="btn-secondary" (click)="uncheckAll()">Uncheck all</button>
+      }
+      <button class="btn-secondary" (click)="print()">🖨 Print</button>
+    </div>
   </div>
 
   @if (loading()) {
@@ -20,7 +28,7 @@
             @for (item of cat.items; track item.name) {
               @let key = itemKey(cat.category, item.name);
               <li [class.done]="isChecked(key)" (click)="toggle(key)">
-                <span class="checkbox">{{ isChecked(key) ? '☑' : '☐' }}</span>
+                <span class="checkbox" [class.checked]="isChecked(key)"></span>
                 <span class="item-amount">{{ item.display }}</span>
                 <span class="item-name">{{ item.name }}</span>
                 @if (item.from_recipes.length > 1) {

@@ -25,6 +25,7 @@ export class RecipesPage implements OnInit {
   vegetarian = signal(false);
   vegan = signal(false);
   favourites = signal(false);
+  sortAz = signal(false);
   loading = signal(true);
 
   courses = computed(() => {
@@ -35,6 +36,16 @@ export class RecipesPage implements OnInit {
     return [...seen].sort();
   });
 
+  hasFilters = computed(() =>
+    this.query() !== '' ||
+    this.selectedCourse() !== null ||
+    this.highProtein() ||
+    this.lowCalorie() ||
+    this.vegetarian() ||
+    this.vegan() ||
+    this.favourites()
+  );
+
   filtered = computed(() => {
     const q = this.query().toLowerCase();
     const course = this.selectedCourse();
@@ -43,7 +54,7 @@ export class RecipesPage implements OnInit {
     const veg = this.vegetarian();
     const vgn = this.vegan();
     const fav = this.favourites();
-    return this.recipes().filter(r =>
+    let result = this.recipes().filter(r =>
       r.title.toLowerCase().includes(q) &&
       (course === null || r.course === course) &&
       (!hp  || (r.protein_per_person != null && r.protein_per_person >= this.HIGH_PROTEIN_G)) &&
@@ -52,6 +63,10 @@ export class RecipesPage implements OnInit {
       (!vgn || r.is_vegan) &&
       (!fav || r.is_favourite)
     );
+    if (this.sortAz()) {
+      result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    return result;
   });
 
   ngOnInit() {
@@ -63,6 +78,16 @@ export class RecipesPage implements OnInit {
 
   toggleCourse(course: string) {
     this.selectedCourse.update(c => c === course ? null : course);
+  }
+
+  clearFilters() {
+    this.query.set('');
+    this.selectedCourse.set(null);
+    this.highProtein.set(false);
+    this.lowCalorie.set(false);
+    this.vegetarian.set(false);
+    this.vegan.set(false);
+    this.favourites.set(false);
   }
 
   toggleFavourite(event: Event, r: RecipeSummary) {

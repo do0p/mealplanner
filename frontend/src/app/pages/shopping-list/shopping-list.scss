@@ -43,7 +43,33 @@
   }
 }
 
-.checkbox { font-size: 1rem; user-select: none; }
+.checkbox {
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 2px solid var(--color-border);
+  border-radius: 3px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s, border-color .12s;
+
+  &.checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+
+    &::after {
+      content: '';
+      width: .35rem;
+      height: .6rem;
+      border: 2px solid #fff;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+      display: block;
+    }
+  }
+}
 
 .item-amount {
   min-width: 65px;

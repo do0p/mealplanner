@@ -36,9 +36,10 @@
       } @else {
         <div class="flex justify-between" style="margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
           <h2 style="font-size:1.1rem;font-weight:600">{{ selectedPlan()!.name }}</h2>
-          <div class="flex gap-1">
+          <div class="flex gap-1" style="align-items:center">
             @if (saving()) { <span class="text-muted" style="font-size:.8rem;line-height:2">Saving…</span> }
             <button class="btn-primary btn-sm" (click)="viewShoppingList()">Shopping list</button>
+            <span class="plan-action-sep"></span>
             <button class="btn-danger btn-sm" (click)="deletePlan()">Delete plan</button>
           </div>
         </div>
@@ -61,7 +62,7 @@
                     <div class="cell-title">{{ entry.recipe_title }}</div>
                     <div class="cell-controls">
                       <button class="btn-secondary btn-sm" (click)="updatePeople(day, meal, entry.people - 1)">−</button>
-                      <span class="cell-people">{{ entry.people }}p</span>
+                      <span class="cell-people">{{ entry.people }} ppl</span>
                       <button class="btn-secondary btn-sm" (click)="updatePeople(day, meal, entry.people + 1)">+</button>
                       <button class="btn-danger btn-sm" (click)="clearSlot(day, meal)" title="Remove">✕</button>
                     </div>
@@ -98,7 +99,11 @@
       />
       <ul class="picker-list">
         @for (r of pickerResults(); track r.id) {
-          <li (click)="pickRecipe(r)">{{ r.title }}
+          <li (click)="pickRecipe(r)">
+            <span class="picker-title">{{ r.title }}</span>
+            @if (r.course) { <span class="picker-course">{{ r.course }}</span> }
+            @if (r.is_vegan) { <span class="picker-diet vegan">vegan</span> }
+            @else if (r.is_vegetarian) { <span class="picker-diet vegetarian">veg</span> }
           </li>
         }
         @if (pickerResults().length === 0) {

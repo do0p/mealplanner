@@ -56,6 +56,36 @@
   }
 }
 
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.toast {
+  padding: .6rem 1.1rem;
+  border-radius: var(--radius);
+  font-size: .875rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  pointer-events: all;
+  animation: toast-in .18s ease;
+
+  &.success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+  &.error   { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .app-footer {
   display: flex;
   align-items: center;
