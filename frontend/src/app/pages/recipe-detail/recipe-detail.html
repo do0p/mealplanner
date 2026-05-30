@@ -41,9 +41,15 @@
             [ngModel]="draftCourse() ?? ''"
             (ngModelChange)="draftCourse.set($event || null)" />
           <datalist id="course-options">
-            <option value="breakfast" /><option value="appetizer" /><option value="soup" />
-            <option value="salad" /><option value="main" /><option value="side" />
-            <option value="dessert" /><option value="snack" /><option value="beverage" />
+            <option value="breakfast"></option>
+            <option value="appetizer"></option>
+            <option value="soup"></option>
+            <option value="salad"></option>
+            <option value="main"></option>
+            <option value="side"></option>
+            <option value="dessert"></option>
+            <option value="snack"></option>
+            <option value="beverage"></option>
           </datalist>
         </div>
         <div class="diet-toggles">
