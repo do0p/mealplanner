@@ -19,7 +19,7 @@ class SPAStaticFiles(StaticFiles):
                 return await super().get_response("index.html", scope)
             raise
 
-from app.db import init_db
+from app.db import init_db, engine
 
 _version_file = Path(__file__).parent.parent.parent / "VERSION"
 APP_VERSION = _version_file.read_text().strip() if _version_file.exists() else "unknown"
@@ -30,9 +30,22 @@ logging.basicConfig(
 )
 
 
+def _reset_orphaned_jobs() -> None:
+    """Reset any jobs left in 'processing' state from a previous run.
+    These can't be running — the background thread died with the process."""
+    from sqlalchemy import text
+    from sqlmodel import Session
+    with Session(engine) as session:
+        session.exec(  # type: ignore[call-overload]
+            text("UPDATE importjob SET status='pending', phase=NULL, progress_current=0, progress_total=0 WHERE status='processing'")
+        )
+        session.commit()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    _reset_orphaned_jobs()
     yield
 
 
