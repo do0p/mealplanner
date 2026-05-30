@@ -36,6 +36,14 @@ from app.services import units
 
 logger = logging.getLogger(__name__)
 
+# Job IDs for which the user has requested cancellation.
+# Module-level so it's shared across all ImportService instances within the process.
+_ABORT_REQUESTED: set[int] = set()
+
+
+class _AbortRequested(Exception):
+    pass
+
 
 class ImportService:
     def __init__(
@@ -167,6 +175,8 @@ class ImportService:
                 segments = text_extractor.extract(data)
 
                 def _on_progress(phase: str, current: int, total: int) -> None:
+                    if job_id in _ABORT_REQUESTED:
+                        raise _AbortRequested()
                     logger.info("Job %d progress: %s %d/%d", job_id, phase, current, total)
                     job.phase = phase
                     job.progress_current = current
@@ -182,6 +192,15 @@ class ImportService:
                 job.status = JOB_COMPLETED
                 job.phase = None
                 job.processed_at = datetime.now(timezone.utc)
+            except _AbortRequested:
+                _ABORT_REQUESTED.discard(job_id)
+                logger.info("Job %d aborted by user — resetting to pending", job_id)
+                job.status = JOB_PENDING
+                job.phase = None
+                job.error = None
+                job.progress_current = 0
+                job.progress_total = 0
+                job.processed_at = None
             except Exception as exc:
                 logger.exception("Job %d failed", job_id)
                 job.status = JOB_FAILED
@@ -235,13 +254,25 @@ class ImportService:
         return recipe
 
     # ------------------------------------------------------------------
-    # Delete a job and all its recipes (including accepted ones)
+    # Abort a processing job (resets it to pending)
+    # ------------------------------------------------------------------
+    def abort_job(self, job_id: int) -> bool:
+        with self._sf() as session:
+            job = session.get(ImportJob, job_id)
+            if job is None or job.status != JOB_PROCESSING:
+                return False
+            _ABORT_REQUESTED.add(job_id)
+            return True
+
+    # ------------------------------------------------------------------
+    # Delete a job, all its recipes, and the uploaded source file
     # ------------------------------------------------------------------
     def delete_job(self, job_id: int) -> dict:
         with self._sf() as session:
             job = session.get(ImportJob, job_id)
             if job is None:
                 return {"deleted": False}
+            stored_file = job.stored_file
             recipes = session.exec(
                 select(Recipe).where(Recipe.import_job_id == job_id)
             ).all()
@@ -250,7 +281,12 @@ class ImportService:
                 session.delete(r)
             session.delete(job)
             session.commit()
-            return {"deleted": True, "accepted_removed": accepted_count}
+        file_path = settings.uploads_dir / stored_file
+        try:
+            file_path.unlink(missing_ok=True)
+        except OSError:
+            logger.warning("Could not delete uploaded file %s", file_path)
+        return {"deleted": True, "accepted_removed": accepted_count}
 
     # ------------------------------------------------------------------
     # Retry a failed job

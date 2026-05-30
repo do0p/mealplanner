@@ -76,6 +76,13 @@ def retry_job(
     return {"queued": len(job_ids), "job_ids": job_ids}
 
 
+@router.post("/{job_id}/abort", status_code=202)
+def abort_job(job_id: int, svc: ImportService = Depends(get_import_service)):
+    if not svc.abort_job(job_id):
+        raise HTTPException(404, "Job not found or not currently processing")
+    return {"aborted": True}
+
+
 @router.delete("/{job_id}", status_code=200)
 def delete_job(job_id: int, svc: ImportService = Depends(get_import_service)):
     result = svc.delete_job(job_id)

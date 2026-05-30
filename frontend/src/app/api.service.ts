@@ -97,6 +97,10 @@ export class ApiService {
     return this.http.post<{ queued: number }>(`${this.base}/imports/${jobId}/retry`, {});
   }
 
+  abortJob(jobId: number): Observable<{ aborted: boolean }> {
+    return this.http.post<{ aborted: boolean }>(`${this.base}/imports/${jobId}/abort`, {});
+  }
+
   deleteJob(jobId: number): Observable<{ deleted: boolean; accepted_removed: number }> {
     return this.http.delete<{ deleted: boolean; accepted_removed: number }>(`${this.base}/imports/${jobId}`);
   }

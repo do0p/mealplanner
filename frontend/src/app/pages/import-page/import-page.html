@@ -94,6 +94,13 @@
         @if (job.recipe_count > 0) {
           <span class="text-muted" style="font-size:.8rem">{{ job.recipe_count }} recipe(s)</span>
         }
+        @if (job.status === 'processing') {
+          <button
+            class="btn-secondary btn-sm"
+            [disabled]="aborting() === job.id"
+            (click)="$event.stopPropagation(); abort(job.id)"
+          >{{ aborting() === job.id ? 'Aborting…' : 'Abort' }}</button>
+        }
         @if (job.status === 'completed' || job.status === 'failed') {
           <button
             class="btn-danger btn-sm"

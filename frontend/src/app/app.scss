@@ -57,8 +57,22 @@
 }
 
 .app-footer {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
   padding: 1rem;
   font-size: .75rem;
   color: #475569;
+}
+
+.tz-select {
+  font-size: .75rem;
+  color: #475569;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none;
+
+  &:hover { color: #334155; }
 }

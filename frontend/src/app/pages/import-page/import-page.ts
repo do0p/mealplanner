@@ -4,6 +4,7 @@ import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { ApiService } from '../../api.service';
 import { ImportJob, LLMStatus, Recipe } from '../../models';
+import { SettingsService } from '../../settings.service';
 
 @Component({
   selector: 'app-import-page',
@@ -13,6 +14,7 @@ import { ImportJob, LLMStatus, Recipe } from '../../models';
 })
 export class ImportPage implements OnInit, OnDestroy {
   private api = inject(ApiService);
+  private settings = inject(SettingsService);
   private pollSub?: Subscription;
   private jobPollSub?: Subscription;
 
@@ -25,6 +27,7 @@ export class ImportPage implements OnInit, OnDestroy {
   uploading = signal(false);
   processing = signal(false);
   retrying = signal<number | null>(null);
+  aborting = signal<number | null>(null);
   expandedJob = signal<number | null>(null);
   expandedRecipe = signal<number | null>(null);
   recipeDetails = signal<Map<number, Recipe>>(new Map());
@@ -40,7 +43,10 @@ export class ImportPage implements OnInit, OnDestroy {
     // Poll LLM status + jobs every 5 s
     this.pollSub = interval(5000).pipe(switchMap(() => this.api.getLLMStatus())).subscribe(s => this.llm.set(s));
     this.jobPollSub = interval(5000).pipe(switchMap(() => this.api.getJobs())).subscribe(newJobs => {
-      newJobs.forEach(j => this.updateEta(j));
+      newJobs.forEach(j => {
+        this.updateEta(j);
+        if (j.status === 'completed' || j.status === 'failed') this.clearPhaseStorage(j.id);
+      });
       this.jobs.update(current => newJobs.map(j => {
         const existing = current.find(c => c.id === j.id);
         return existing?.recipes ? { ...j, recipes: existing.recipes } : j;
@@ -133,6 +139,17 @@ export class ImportPage implements OnInit, OnDestroy {
     });
   }
 
+  abort(jobId: number) {
+    this.aborting.set(jobId);
+    this.api.abortJob(jobId).subscribe({
+      next: () => { this.aborting.set(null); this.refresh(); },
+      error: err => {
+        this.aborting.set(null);
+        alert(err.error?.detail ?? 'Could not abort job');
+      },
+    });
+  }
+
   retry(jobId: number) {
     this.retrying.set(jobId);
     this.api.retryJob(jobId).subscribe({
@@ -193,10 +210,17 @@ export class ImportPage implements OnInit, OnDestroy {
   private updateEta(job: ImportJob): void {
     if (job.status !== 'processing' || !job.phase) return;
     const key = `${job.id}:${job.phase}`;
+    const lsKey = `mp:ps:${job.id}:${job.phase}`;
     const now = Date.now();
 
     if (!this.phaseStartTimes.has(key)) {
-      this.phaseStartTimes.set(key, now);
+      const stored = localStorage.getItem(lsKey);
+      if (stored) {
+        this.phaseStartTimes.set(key, parseInt(stored, 10));
+      } else {
+        this.phaseStartTimes.set(key, now);
+        localStorage.setItem(lsKey, String(now));
+      }
     }
 
     const lastUpdate = this.etaLastUpdate.get(key) ?? 0;
@@ -215,6 +239,10 @@ export class ImportPage implements OnInit, OnDestroy {
     this.etaCache.set(key, this.fmtDuration(remaining) + ' remaining');
   }
 
+  private clearPhaseStorage(jobId: number): void {
+    this.PHASES.forEach(phase => localStorage.removeItem(`mp:ps:${jobId}:${phase}`));
+  }
+
   private fmtDuration(ms: number): string {
     const s = Math.round(ms / 1000);
     if (s < 60) return `~${s}s`;
@@ -230,6 +258,6 @@ export class ImportPage implements OnInit, OnDestroy {
   }
 
   formatDate(iso: string): string {
-    return new Date(iso).toLocaleString();
+    return this.settings.formatDate(iso);
   }
 }
