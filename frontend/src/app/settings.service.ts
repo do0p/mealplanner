@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 const DEFAULT_TZ = 'Europe/Vienna';
 
 export function formatQty(qty: number | null, unit: string | null): string {
-  if (qty == null) return '';
   const u = unit === 'pcs' ? '' : (unit ?? '');
+  if (qty == null) return u;
   let r: number;
   if (unit === 'pcs') {
     r = Math.ceil(qty - 1e-9);

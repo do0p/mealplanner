@@ -14,10 +14,10 @@
         }
       </div>
       <div class="flex gap-1" style="align-items:flex-start">
-        <button class="marker-btn" [class.active]="recipe()!.is_favourite" (click)="toggleFavourite()"
-          title="{{ recipe()!.is_favourite ? 'Remove from favourites' : 'Add to favourites' }}">⭐</button>
         <button class="marker-btn" [class.active]="recipe()!.is_want_to_try" (click)="toggleWantToTry()"
           title="{{ recipe()!.is_want_to_try ? 'Remove from want to try' : 'Mark as want to try' }}">🔖</button>
+        <button class="marker-btn" [class.active]="recipe()!.is_favourite" (click)="toggleFavourite()"
+          title="{{ recipe()!.is_favourite ? 'Remove from favourites' : 'Add to favourites' }}">⭐</button>
         @if (!editing()) {
           @if (recipe()!.source_file) {
             <a [href]="sourceUrl()" target="_blank" class="btn-secondary btn-sm" style="display:inline-flex;align-items:center;padding:.35rem .75rem">
