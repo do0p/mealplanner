@@ -8,7 +8,7 @@ services:
       - "8000:8000"
     environment:
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
-      - OLLAMA_MODEL=qwen3:30b-a3b-32k
+      - OLLAMA_MODEL=qwen3:4b
       - OLLAMA_TIMEOUT=600
       - DATA_DIR=/app/data
     volumes:
