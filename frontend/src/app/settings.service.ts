@@ -80,6 +80,12 @@ export class SettingsService {
     document.documentElement.dataset['theme'] = dark ? 'dark' : '';
   }
 
+  defaultServings = signal(2);
+
+  setDefaultServings(n: number): void {
+    this.defaultServings.set(n);
+  }
+
   setTimezone(tz: string): void {
     this._fmt = makeFmt(tz);
   }

@@ -54,10 +54,13 @@ All backend settings are environment variables. Copy `backend/.env.example` and 
 | `LLM_PROVIDER` | `anthropic` | `anthropic` or `ollama` |
 | `ANTHROPIC_API_KEY` | — | Required when using Anthropic. Get one at [console.anthropic.com](https://console.anthropic.com). Note: Pro/Max subscriptions do not include API credits — prepaid credits are billed separately. |
 | `ANTHROPIC_MODEL` | `claude-haiku-4-5-20251001` | Any Claude model ID |
+| `ANTHROPIC_TIMEOUT` | `120` | Seconds to wait for an Anthropic API response |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama endpoint. Inside Docker use `http://host.docker.internal:11434` |
 | `OLLAMA_MODEL` | `qwen3:4b` | Any model pulled in Ollama |
 | `OLLAMA_TIMEOUT` | `600` | Seconds to wait for an Ollama response |
 | `DATA_DIR` | `./data` | Directory for the SQLite database and uploaded files |
+| `DISPLAY_TIMEZONE` | `Europe/Vienna` | IANA timezone name used for date display in the frontend |
+| `DEFAULT_SERVINGS` | `2` | Initial serving count shown when opening any recipe |
 
 > **Security:** The server has no built-in authentication. It is designed to run on a trusted local network. Do not expose it directly to the internet — if remote access is needed, place it behind a reverse proxy with authentication (e.g. Nginx, Caddy, Traefik).
 
@@ -108,6 +111,8 @@ make deploy    # multi-platform build + push
 ### Ingredient storage and scaling
 
 Ingredients are stored **per person** (`book_quantity ÷ book_servings`). Scaling to N servings = `quantity_per_person × N`. Metric units (g, ml) are rounded to the nearest 5; culinary units (cup, tbsp, tsp) are rendered as fractions where appropriate.
+
+A small hardcoded list of indivisible ingredients (currently: eggs) is ceiling-rounded in the display — e.g. 1.5 eggs becomes 2. This list lives in `backend/app/models.py` (`WHOLE_UNIT_INGREDIENTS`) and takes effect immediately for all existing recipes without re-importing.
 
 ### Shopping list aggregation
 

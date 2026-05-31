@@ -18,8 +18,8 @@ export class ApiService {
   private base = environment.apiUrl;
 
   // ── Config ───────────────────────────────────────────────────────────────
-  getVersion(): Observable<{ version: string; display_timezone: string }> {
-    return this.http.get<{ version: string; display_timezone: string }>(`${this.base}/version`);
+  getVersion(): Observable<{ version: string; display_timezone: string; default_servings: number }> {
+    return this.http.get<{ version: string; display_timezone: string; default_servings: number }>(`${this.base}/version`);
   }
 
   // ── Recipes ──────────────────────────────────────────────────────────────

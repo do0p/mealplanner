@@ -11,6 +11,11 @@ def _now() -> datetime:
 RECIPE_DRAFT = "draft"
 RECIPE_ACCEPTED = "accepted"
 
+# Ingredients that cannot be meaningfully split below 1 unit (e.g. 0.5 eggs
+# makes no sense). Matched against any word in the ingredient name (lowercase).
+# Extend this list without re-importing recipes — it is evaluated at serve time.
+WHOLE_UNIT_INGREDIENTS: frozenset[str] = frozenset({"egg", "eggs"})
+
 JOB_PENDING = "pending"
 JOB_PROCESSING = "processing"
 JOB_COMPLETED = "completed"
@@ -126,6 +131,7 @@ class IngredientRead(BaseModel):
     unit: str | None
     category: str | None
     raw_text: str | None
+    whole_unit_only: bool = False
 
 
 class StepRead(BaseModel):

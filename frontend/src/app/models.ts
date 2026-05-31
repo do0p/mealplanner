@@ -5,6 +5,7 @@ export interface Ingredient {
   unit: string | null;
   category: string | null;
   raw_text: string | null;
+  whole_unit_only: boolean;
 }
 
 export interface Step {

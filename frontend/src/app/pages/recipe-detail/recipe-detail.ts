@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { Recipe } from '../../models';
-import { formatQty } from '../../settings.service';
+import { formatQty, SettingsService } from '../../settings.service';
 import { ToastService } from '../../toast.service';
 
 interface IngredientDraft {
@@ -26,6 +26,7 @@ export class RecipeDetailPage implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private settings = inject(SettingsService);
 
   recipe = signal<Recipe | null>(null);
   loading = signal(true);
@@ -45,13 +46,11 @@ export class RecipeDetailPage implements OnInit {
     const r = this.recipe();
     const n = this.people();
     if (!r) return [];
-    return r.ingredients.map(ing => ({
-      ...ing,
-      display: formatQty(
-        ing.quantity_per_person != null ? ing.quantity_per_person * n : null,
-        ing.unit,
-      ),
-    }));
+    return r.ingredients.map(ing => {
+      let qty = ing.quantity_per_person != null ? ing.quantity_per_person * n : null;
+      if (qty != null && ing.whole_unit_only) qty = Math.ceil(qty);
+      return { ...ing, display: formatQty(qty, ing.unit) };
+    });
   });
 
   sourceUrl = computed(() => {
@@ -73,7 +72,7 @@ export class RecipeDetailPage implements OnInit {
     this.api.getRecipe(id).subscribe({
       next: r => {
         this.recipe.set(r);
-        this.people.set(r.base_servings ?? 2);
+        this.people.set(this.settings.defaultServings());
         this.loading.set(false);
       },
       error: () => this.loading.set(false),

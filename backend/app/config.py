@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     # IANA timezone name used for display in the frontend.
     display_timezone: str = "Europe/Vienna"
 
+    # Default number of servings shown when opening a recipe.
+    default_servings: int = 2
+
     # Everything persistent lives under data_dir (sqlite db + uploaded files).
     data_dir: str = "./data"
 

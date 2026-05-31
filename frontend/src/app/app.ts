@@ -20,6 +20,7 @@ export class App implements OnInit {
   ngOnInit(): void {
     this.api.getVersion().subscribe(v => {
       this.settings.setTimezone(v.display_timezone);
+      this.settings.setDefaultServings(v.default_servings);
     });
   }
 }

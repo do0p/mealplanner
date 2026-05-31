@@ -13,6 +13,7 @@ from app.models import (
     RecipeSummary,
     RecipeUpdate,
     StepRead,
+    WHOLE_UNIT_INGREDIENTS,
 )
 
 
@@ -42,6 +43,9 @@ def _to_recipe_read(r: Recipe) -> RecipeRead:
                 unit=i.unit,
                 category=i.category,
                 raw_text=i.raw_text,
+                whole_unit_only=any(
+                    w in WHOLE_UNIT_INGREDIENTS for w in i.name.lower().split()
+                ),
             )
             for i in r.ingredients
         ],
