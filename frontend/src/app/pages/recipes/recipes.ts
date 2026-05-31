@@ -17,7 +17,7 @@ export class RecipesPage implements OnInit {
   private filterSvc = inject(RecipeFilterService);
 
   readonly HIGH_PROTEIN_G = 40;
-  readonly LOW_CALORIE_KCAL = 600;
+  readonly LOW_CALORIE_KCAL = 500;
 
   recipes = signal<RecipeSummary[]>([]);
   loading = signal(true);
