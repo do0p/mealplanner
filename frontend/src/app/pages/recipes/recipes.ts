@@ -31,8 +31,6 @@ export class RecipesPage implements OnInit {
   vegan = this.filterSvc.vegan;
   favourites = this.filterSvc.favourites;
   wantToTry = this.filterSvc.wantToTry;
-  sortAz = this.filterSvc.sortAz;
-
   // Recipes matching all active filters except the course constraint —
   // used to determine which course chips are still reachable.
   private withoutCourse = computed(() => {
@@ -96,9 +94,6 @@ export class RecipesPage implements OnInit {
       (!fav || r.is_favourite) &&
       (!wtt || r.is_want_to_try)
     );
-    if (this.sortAz()) {
-      result = [...result].sort((a, b) => a.title.localeCompare(b.title));
-    }
     return result;
   });
 

@@ -43,7 +43,6 @@
           ≤ {{ LOW_CALORIE_KCAL }} kcal
         </button>
       }
-      <button class="chip" [class.active]="sortAz()" (click)="sortAz.set(!sortAz())">A–Z</button>
     </div>
     @if (hasFilters()) {
       <button class="clear-filters" (click)="clearFilters()">✕ Clear filters</button>

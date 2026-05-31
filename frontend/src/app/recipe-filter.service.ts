@@ -10,8 +10,6 @@ export class RecipeFilterService {
   vegan = signal(false);
   favourites = signal(false);
   wantToTry = signal(false);
-  sortAz = signal(false);
-
   clear() {
     this.query.set('');
     this.selectedCourse.set(null);
