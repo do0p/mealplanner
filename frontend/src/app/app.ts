@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { APP_VERSION } from './version';
 import { ApiService } from './api.service';
+import { ConfirmService } from './confirm.service';
 import { SettingsService } from './settings.service';
 import { ToastService } from './toast.service';
 
@@ -14,6 +15,7 @@ import { ToastService } from './toast.service';
 export class App implements OnInit {
   version = APP_VERSION;
   private api = inject(ApiService);
+  confirm = inject(ConfirmService);
   settings = inject(SettingsService);
   toast = inject(ToastService);
 

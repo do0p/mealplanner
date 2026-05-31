@@ -1,13 +1,9 @@
-fastapi
-uvicorn[standard]
-pydantic-settings
-python-multipart
-pypdf
-pillow
-ollama
-anthropic
-sqlmodel
-
-# dev / test
-pytest
-httpx
+anthropic==0.105.2
+fastapi==0.136.3
+ollama==0.6.2
+pillow==12.2.0
+pydantic-settings==2.14.1
+pypdf==6.12.2
+python-multipart==0.0.29
+sqlmodel==0.0.38
+uvicorn[standard]==0.48.0

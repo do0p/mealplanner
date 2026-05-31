@@ -28,7 +28,7 @@ install-venv:
 	curl -sSL https://bootstrap.pypa.io/get-pip.py | backend/.venv/bin/python
 
 install:
-	cd backend && .venv/bin/pip install -r requirements.txt
+	cd backend && .venv/bin/pip install -r requirements-dev.txt
 	cd frontend && npm install
 
 dev:

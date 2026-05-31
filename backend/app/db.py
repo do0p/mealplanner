@@ -22,6 +22,14 @@ def init_db() -> None:
 
     SQLModel.metadata.create_all(engine)
     _migrate(engine)
+    _enable_wal(engine)
+
+
+def _enable_wal(eng) -> None:
+    with eng.connect() as conn:
+        conn.execute(text("PRAGMA journal_mode=WAL"))
+        conn.execute(text("PRAGMA busy_timeout=5000"))
+        conn.commit()
 
 
 def _drop_verification_columns(conn) -> None:

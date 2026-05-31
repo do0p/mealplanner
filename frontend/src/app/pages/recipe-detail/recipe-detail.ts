@@ -3,6 +3,7 @@ import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
+import { ConfirmService } from '../../confirm.service';
 import { Recipe } from '../../models';
 import { formatQty, SettingsService } from '../../settings.service';
 import { ToastService } from '../../toast.service';
@@ -23,6 +24,7 @@ interface IngredientDraft {
 })
 export class RecipeDetailPage implements OnInit {
   private api = inject(ApiService);
+  private confirm = inject(ConfirmService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
@@ -157,19 +159,30 @@ export class RecipeDetailPage implements OnInit {
     const r = this.recipe()!;
     const next = !r.is_favourite;
     this.recipe.update(cur => cur ? { ...cur, is_favourite: next } : cur);
-    this.api.updateRecipe(r.id, { is_favourite: next }).subscribe();
+    this.api.updateRecipe(r.id, { is_favourite: next }).subscribe({
+      error: () => {
+        this.recipe.update(cur => cur ? { ...cur, is_favourite: r.is_favourite } : cur);
+        this.toast.show('Update failed', 'error');
+      },
+    });
   }
 
   toggleWantToTry() {
     const r = this.recipe()!;
     const next = !r.is_want_to_try;
     this.recipe.update(cur => cur ? { ...cur, is_want_to_try: next } : cur);
-    this.api.updateRecipe(r.id, { is_want_to_try: next }).subscribe();
+    this.api.updateRecipe(r.id, { is_want_to_try: next }).subscribe({
+      error: () => {
+        this.recipe.update(cur => cur ? { ...cur, is_want_to_try: r.is_want_to_try } : cur);
+        this.toast.show('Update failed', 'error');
+      },
+    });
   }
 
-  delete() {
+  async delete() {
     const r = this.recipe();
-    if (!r || !confirm(`Delete "${r.title}"?`)) return;
+    if (!r) return;
+    if (!await this.confirm.confirm(`Delete "${r.title}"?`)) return;
     this.deleting.set(true);
     this.api.deleteRecipe(r.id).subscribe({
       next: () => this.router.navigate(['/recipes']),

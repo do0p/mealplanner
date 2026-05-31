@@ -63,12 +63,12 @@ backend/app/
     shopping_list.py   # pure aggregation (no LLM)
     recipe_service.py  # recipe CRUD
     plan_service.py    # plan CRUD + shopping list builder
-    import_service.py  # upload, queue, background processing, accept
+    import_service.py  # upload, queue, background processing (auto-accept)
   routers/         # recipes.py, plans.py, imports.py
 ```
 
 **LLM usage — import pipeline only:**
-The LLM (Ollama) is contacted exclusively at import time (segmentation → extraction → verification). All serving-time features — recipe browsing, scaling, planner, shopping list — are deterministic DB+pure-function operations. The app starts and runs fully without Ollama; only new imports are blocked when it is unreachable.
+The LLM is contacted exclusively at import time (segmentation → extraction). All serving-time features — recipe browsing, scaling, planner, shopping list — are deterministic DB+pure-function operations. The app starts and runs fully without the LLM; only new imports are blocked when it is unreachable. Extracted recipes are accepted automatically (no manual review step).
 
 **Ingredient normalization:**
 Ingredients are stored **per 1 person** (`book_quantity ÷ book_servings`). Scaling to N people = `quantity_per_person × N`. Units are normalized to metric (g, ml, pcs) by `services/units.py` as a safety net over the LLM's own conversion.
@@ -92,7 +92,7 @@ frontend/src/app/
   pages/
     recipes/           # recipe library grid with search
     recipe-detail/     # ingredient scaler + verbatim instructions
-    import-page/       # upload, job queue, LLM status, accept flow
+    import-page/       # upload, job queue, LLM status
     planner/           # 7×3 weekly grid, recipe picker overlay
     shopping-list/     # grouped list with checkboxes + print
 ```
@@ -122,8 +122,10 @@ All API routes are under the `/api` prefix to avoid conflicts with Angular's cli
 | GET | /api/imports/ | list import jobs |
 | POST | /api/imports/uploads | upload file (LLM-free) |
 | POST | /api/imports/process | trigger background extraction |
-| GET | /api/imports/{id} | job detail + draft recipes |
-| POST | /api/imports/{id}/accept | accept drafts (all or selected) |
+| GET | /api/imports/{id} | job detail + extracted recipes |
+| POST | /api/imports/{id}/retry | retry a failed job |
+| POST | /api/imports/{id}/abort | abort a processing job |
+| DELETE | /api/imports/{id} | delete job + recipes + uploaded file |
 | GET | /api/health | health check |
 | GET | /api/version | app version + timezone + default_servings |
 

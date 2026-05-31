@@ -26,7 +26,7 @@
           <h2 class="category-title">{{ cat.category }}</h2>
           <ul class="item-list">
             @for (item of cat.items; track item.name) {
-              @let key = itemKey(cat.category, item.name);
+              @let key = itemKey(cat.category, item.name, item.unit);
               <li [class.done]="isChecked(key)" (click)="toggle(key)">
                 <span class="checkbox" [class.checked]="isChecked(key)"></span>
                 <span class="item-amount">{{ item.display }}</span>

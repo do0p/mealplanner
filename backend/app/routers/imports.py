@@ -12,6 +12,8 @@ from app.services.import_service import ImportService
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/imports", tags=["imports"])
 
+_MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
+
 
 @router.get("/llm-status")
 def llm_status(svc: ImportService = Depends(get_import_service)):
@@ -29,6 +31,8 @@ async def upload(
     svc: ImportService = Depends(get_import_service),
 ):
     data = await file.read()
+    if len(data) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(413, f"File too large — maximum is {_MAX_UPLOAD_BYTES // (1024 * 1024)} MB")
     try:
         return svc.upload(data, file.filename or "upload")
     except UnsupportedFormatError as exc:

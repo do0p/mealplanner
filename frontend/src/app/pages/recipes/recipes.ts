@@ -3,8 +3,9 @@ import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
-import { RecipeFilterService } from '../../recipe-filter.service';
 import { RecipeSummary } from '../../models';
+import { RecipeFilterService } from '../../recipe-filter.service';
+import { ToastService } from '../../toast.service';
 
 @Component({
   selector: 'app-recipes',
@@ -15,6 +16,7 @@ import { RecipeSummary } from '../../models';
 export class RecipesPage implements OnInit {
   private api = inject(ApiService);
   private filterSvc = inject(RecipeFilterService);
+  private toast = inject(ToastService);
 
   readonly HIGH_PROTEIN_G = 40;
   readonly LOW_CALORIE_KCAL = 500;
@@ -31,26 +33,21 @@ export class RecipesPage implements OnInit {
   vegan = this.filterSvc.vegan;
   favourites = this.filterSvc.favourites;
   wantToTry = this.filterSvc.wantToTry;
+  private _matches(r: RecipeSummary): boolean {
+    return (
+      r.title.toLowerCase().includes(this.query().toLowerCase()) &&
+      (!this.highProtein() || (r.protein_per_person != null && r.protein_per_person >= this.HIGH_PROTEIN_G)) &&
+      (!this.lowCalorie()  || (r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL)) &&
+      (!this.vegetarian()  || r.is_vegetarian) &&
+      (!this.vegan()       || r.is_vegan) &&
+      (!this.favourites()  || r.is_favourite) &&
+      (!this.wantToTry()   || r.is_want_to_try)
+    );
+  }
+
   // Recipes matching all active filters except the course constraint —
   // used to determine which course chips are still reachable.
-  private withoutCourse = computed(() => {
-    const q = this.query().toLowerCase();
-    const hp = this.highProtein();
-    const lc = this.lowCalorie();
-    const veg = this.vegetarian();
-    const vgn = this.vegan();
-    const fav = this.favourites();
-    const wtt = this.wantToTry();
-    return this.recipes().filter(r =>
-      r.title.toLowerCase().includes(q) &&
-      (!hp  || (r.protein_per_person != null && r.protein_per_person >= this.HIGH_PROTEIN_G)) &&
-      (!lc  || (r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL)) &&
-      (!veg || r.is_vegetarian) &&
-      (!vgn || r.is_vegan) &&
-      (!fav || r.is_favourite) &&
-      (!wtt || r.is_want_to_try)
-    );
-  });
+  private withoutCourse = computed(() => this.recipes().filter(r => this._matches(r)));
 
   // Course chips: only courses reachable from the current filter state,
   // plus the selected course so it can always be deactivated.
@@ -76,25 +73,8 @@ export class RecipesPage implements OnInit {
   );
 
   filtered = computed(() => {
-    const q = this.query().toLowerCase();
     const course = this.selectedCourse();
-    const hp = this.highProtein();
-    const lc = this.lowCalorie();
-    const veg = this.vegetarian();
-    const vgn = this.vegan();
-    const fav = this.favourites();
-    const wtt = this.wantToTry();
-    let result = this.recipes().filter(r =>
-      r.title.toLowerCase().includes(q) &&
-      (course === null || r.course === course) &&
-      (!hp  || (r.protein_per_person != null && r.protein_per_person >= this.HIGH_PROTEIN_G)) &&
-      (!lc  || (r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL)) &&
-      (!veg || r.is_vegetarian) &&
-      (!vgn || r.is_vegan) &&
-      (!fav || r.is_favourite) &&
-      (!wtt || r.is_want_to_try)
-    );
-    return result;
+    return this.withoutCourse().filter(r => course === null || r.course === course);
   });
 
   // Boolean chip visibility: active filters always stay visible;
@@ -140,7 +120,12 @@ export class RecipesPage implements OnInit {
     event.stopPropagation();
     const next = !r.is_favourite;
     this.recipes.update(list => list.map(x => x.id === r.id ? { ...x, is_favourite: next } : x));
-    this.api.updateRecipe(r.id, { is_favourite: next }).subscribe();
+    this.api.updateRecipe(r.id, { is_favourite: next }).subscribe({
+      error: () => {
+        this.recipes.update(list => list.map(x => x.id === r.id ? { ...x, is_favourite: r.is_favourite } : x));
+        this.toast.show('Update failed', 'error');
+      },
+    });
   }
 
   toggleWantToTry(event: Event, r: RecipeSummary) {
@@ -148,6 +133,11 @@ export class RecipesPage implements OnInit {
     event.stopPropagation();
     const next = !r.is_want_to_try;
     this.recipes.update(list => list.map(x => x.id === r.id ? { ...x, is_want_to_try: next } : x));
-    this.api.updateRecipe(r.id, { is_want_to_try: next }).subscribe();
+    this.api.updateRecipe(r.id, { is_want_to_try: next }).subscribe({
+      error: () => {
+        this.recipes.update(list => list.map(x => x.id === r.id ? { ...x, is_want_to_try: r.is_want_to_try } : x));
+        this.toast.show('Update failed', 'error');
+      },
+    });
   }
 }

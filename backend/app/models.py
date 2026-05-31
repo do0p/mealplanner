@@ -8,7 +8,6 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-RECIPE_DRAFT = "draft"
 RECIPE_ACCEPTED = "accepted"
 
 # Ingredients that cannot be meaningfully split below 1 unit (e.g. 0.5 eggs
@@ -70,7 +69,7 @@ class Recipe(SQLModel, table=True):
     is_favourite: bool = Field(default=False)
     is_want_to_try: bool = Field(default=False)
 
-    status: str = RECIPE_DRAFT
+    status: str = RECIPE_ACCEPTED
     created_at: datetime = Field(default_factory=_now)
 
     ingredients: list[Ingredient] = Relationship(

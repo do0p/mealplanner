@@ -2,6 +2,7 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
+import { ConfirmService } from '../../confirm.service';
 import { Plan, PlanEntry, PlanSummary, RecipeSummary } from '../../models';
 
 export const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -19,6 +20,7 @@ export function slotKey(day: string, meal: string): string {
 })
 export class PlannerPage implements OnInit {
   private api = inject(ApiService);
+  private confirm = inject(ConfirmService);
   private router = inject(Router);
 
   days = DAYS;
@@ -93,9 +95,10 @@ export class PlannerPage implements OnInit {
     });
   }
 
-  deletePlan() {
+  async deletePlan() {
     const plan = this.selectedPlan();
-    if (!plan || !confirm(`Delete plan "${plan.name}"?`)) return;
+    if (!plan) return;
+    if (!await this.confirm.confirm(`Delete plan "${plan.name}"?`)) return;
     this.api.deletePlan(plan.id).subscribe(() => {
       this.plans.update(pl => pl.filter(p => p.id !== plan.id));
       this.selectedPlan.set(null);

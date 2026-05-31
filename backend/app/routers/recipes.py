@@ -45,7 +45,6 @@ def delete_recipe(recipe_id: int, session: Session = Depends(get_session)):
 
 @router.get("/{recipe_id}/source")
 def get_source(recipe_id: int, session: Session = Depends(get_session)):
-    from sqlmodel import Session as _S
     recipe = session.get(models.Recipe, recipe_id)
     if recipe is None:
         raise HTTPException(404, "Recipe not found")

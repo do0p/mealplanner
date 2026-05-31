@@ -91,7 +91,8 @@ class ImportService:
             raise UnsupportedFormatError(fmt)
 
         settings.uploads_dir.mkdir(parents=True, exist_ok=True)
-        stored_name = f"{uuid.uuid4().hex}_{filename}"
+        safe_name = Path(filename).name or "upload"
+        stored_name = f"{uuid.uuid4().hex}_{safe_name}"
         (settings.uploads_dir / stored_name).write_bytes(file_bytes)
 
         with self._sf() as session:

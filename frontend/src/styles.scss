@@ -135,3 +135,24 @@ input, select, textarea {
 .flex { display: flex; align-items: center; }
 .flex-wrap { flex-wrap: wrap; }
 .justify-between { justify-content: space-between; }
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirm-dialog {
+  width: min(420px, 90vw);
+  .confirm-message { font-size: .975rem; line-height: 1.5; }
+  .confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+    margin-top: 1.25rem;
+  }
+}

@@ -27,3 +27,15 @@
     }
   </div>
 }
+
+@if (confirm.dialog(); as d) {
+  <div class="confirm-overlay" (click)="confirm.cancel()">
+    <div class="confirm-dialog card" (click)="$event.stopPropagation()">
+      <p class="confirm-message">{{ d.message }}</p>
+      <div class="confirm-actions">
+        <button class="btn-secondary" (click)="confirm.cancel()">Cancel</button>
+        <button class="btn-danger" (click)="confirm.accept()">Confirm</button>
+      </div>
+    </div>
+  </div>
+}

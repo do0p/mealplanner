@@ -3,8 +3,10 @@ import { NgTemplateOutlet } from '@angular/common';
 import { interval, Subscription } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { ApiService } from '../../api.service';
+import { ConfirmService } from '../../confirm.service';
 import { ImportJob, LLMStatus, Recipe } from '../../models';
 import { SettingsService, formatQty } from '../../settings.service';
+import { ToastService } from '../../toast.service';
 
 @Component({
   selector: 'app-import-page',
@@ -14,7 +16,9 @@ import { SettingsService, formatQty } from '../../settings.service';
 })
 export class ImportPage implements OnInit, OnDestroy {
   api = inject(ApiService);
+  private confirm = inject(ConfirmService);
   private settings = inject(SettingsService);
+  private toast = inject(ToastService);
   private pollSub?: Subscription;
   private jobPollSub?: Subscription;
 
@@ -97,7 +101,7 @@ export class ImportPage implements OnInit, OnDestroy {
       next: () => { this.processing.set(false); this.refresh(); },
       error: err => {
         this.processing.set(false);
-        alert(err.error?.detail ?? 'Could not start processing');
+        this.toast.show(err.error?.detail ?? 'Could not start processing', 'error');
       },
     });
   }
@@ -132,7 +136,7 @@ export class ImportPage implements OnInit, OnDestroy {
       next: () => { this.aborting.set(null); this.refresh(); },
       error: err => {
         this.aborting.set(null);
-        alert(err.error?.detail ?? 'Could not abort job');
+        this.toast.show(err.error?.detail ?? 'Could not abort job', 'error');
       },
     });
   }
@@ -143,16 +147,16 @@ export class ImportPage implements OnInit, OnDestroy {
       next: () => { this.retrying.set(null); this.refresh(); },
       error: err => {
         this.retrying.set(null);
-        alert(err.error?.detail ?? 'Could not retry job');
+        this.toast.show(err.error?.detail ?? 'Could not retry job', 'error');
       },
     });
   }
 
-  deleteJob(job: ImportJob) {
+  async deleteJob(job: ImportJob) {
     const recipeNote = job.recipe_count > 0
       ? ` This will also remove ${job.recipe_count} recipe(s), including any already accepted into your library.`
       : '';
-    if (!confirm(`Remove this import?${recipeNote}`)) return;
+    if (!await this.confirm.confirm(`Remove this import?${recipeNote}`)) return;
     this.api.deleteJob(job.id).subscribe(() => {
       this.jobs.update(jobs => jobs.filter(j => j.id !== job.id));
       if (this.expandedJob() === job.id) this.expandedJob.set(null);
