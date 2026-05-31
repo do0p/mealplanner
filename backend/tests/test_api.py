@@ -66,24 +66,24 @@ def _seed_recipe(client: TestClient, **kwargs) -> dict:
 
 
 def test_list_recipes_empty(client):
-    r = client.get("/recipes/")
+    r = client.get("/api/recipes/")
     assert r.status_code == 200
     assert r.json() == []
 
 
 def test_get_recipe_not_found(client):
-    assert client.get("/recipes/999").status_code == 404
+    assert client.get("/api/recipes/999").status_code == 404
 
 
 def test_list_and_get_recipe(client):
     _seed_recipe(client, title="Pasta", base_servings=2,
                  ingredients=[("Flour", 100.0, "g", "pantry")],
                  steps=["Boil water", "Cook pasta"])
-    items = client.get("/recipes/").json()
+    items = client.get("/api/recipes/").json()
     assert len(items) == 1
     assert items[0]["title"] == "Pasta"
 
-    detail = client.get(f"/recipes/{items[0]['id']}").json()
+    detail = client.get(f"/api/recipes/{items[0]['id']}").json()
     assert detail["title"] == "Pasta"
     assert detail["base_servings"] == 2
     assert len(detail["ingredients"]) == 1
@@ -94,7 +94,7 @@ def test_list_and_get_recipe(client):
 
 def test_update_recipe_title(client):
     info = _seed_recipe(client, title="Old Name")
-    r = client.put(f"/recipes/{info['id']}", json={"title": "New Name"})
+    r = client.put(f"/api/recipes/{info['id']}", json={"title": "New Name"})
     assert r.status_code == 200
     assert r.json()["title"] == "New Name"
 
@@ -102,7 +102,7 @@ def test_update_recipe_title(client):
 def test_update_recipe_ingredients_replaces_all(client):
     info = _seed_recipe(client, title="R",
                         ingredients=[("Egg", 1.0, "pcs", "dairy"), ("Milk", 50.0, "ml", "dairy")])
-    r = client.put(f"/recipes/{info['id']}", json={
+    r = client.put(f"/api/recipes/{info['id']}", json={
         "ingredients": [{"name": "Butter", "quantity_per_person": 25.0, "unit": "g", "category": "dairy"}]
     })
     assert r.status_code == 200
@@ -113,20 +113,20 @@ def test_update_recipe_ingredients_replaces_all(client):
 
 def test_delete_recipe(client):
     info = _seed_recipe(client, title="ToDelete")
-    assert client.delete(f"/recipes/{info['id']}").status_code == 204
-    assert client.get(f"/recipes/{info['id']}").status_code == 404
+    assert client.delete(f"/api/recipes/{info['id']}").status_code == 204
+    assert client.get(f"/api/recipes/{info['id']}").status_code == 404
 
 
 # ─── plans ───────────────────────────────────────────────────────────────────
 
 def test_create_and_list_plan(client):
-    r = client.post("/plans/", json={"name": "Week 1"})
+    r = client.post("/api/plans/", json={"name": "Week 1"})
     assert r.status_code == 201
     plan = r.json()
     assert plan["name"] == "Week 1"
     assert plan["entries"] == []
 
-    plans = client.get("/plans/").json()
+    plans = client.get("/api/plans/").json()
     assert len(plans) == 1
     assert plans[0]["entry_count"] == 0
 
@@ -135,9 +135,9 @@ def test_update_plan_adds_entries(client):
     recipe = _seed_recipe(client, title="Soup",
                           ingredients=[("Onion", 0.5, "pcs", "produce"),
                                        ("Carrot", 50.0, "g", "produce")])
-    plan_id = client.post("/plans/", json={"name": "Plan A"}).json()["id"]
+    plan_id = client.post("/api/plans/", json={"name": "Plan A"}).json()["id"]
 
-    r = client.put(f"/plans/{plan_id}", json={
+    r = client.put(f"/api/plans/{plan_id}", json={
         "entries": [{"recipe_id": recipe["id"], "slot": "Mon-dinner", "people": 4}]
     })
     assert r.status_code == 200
@@ -155,12 +155,12 @@ def test_shopping_list_scales_and_aggregates(client):
             ("Lettuce", 50.0, "g", "produce"),
         ],
     )
-    plan_id = client.post("/plans/", json={"name": "P"}).json()["id"]
-    client.put(f"/plans/{plan_id}", json={
+    plan_id = client.post("/api/plans/", json={"name": "P"}).json()["id"]
+    client.put(f"/api/plans/{plan_id}", json={
         "entries": [{"recipe_id": recipe["id"], "slot": "Tue-lunch", "people": 3}]
     })
 
-    sl = client.get(f"/plans/{plan_id}/shopping-list").json()
+    sl = client.get(f"/api/plans/{plan_id}/shopping-list").json()
     items = {i["name"]: i for c in sl["categories"] for i in c["items"]}
 
     assert items["Tomato"]["quantity"] == 3.0   # 1/person * 3
@@ -168,6 +168,6 @@ def test_shopping_list_scales_and_aggregates(client):
 
 
 def test_delete_plan(client):
-    plan_id = client.post("/plans/", json={"name": "Temp"}).json()["id"]
-    assert client.delete(f"/plans/{plan_id}").status_code == 204
-    assert client.get(f"/plans/{plan_id}").status_code == 404
+    plan_id = client.post("/api/plans/", json={"name": "Temp"}).json()["id"]
+    assert client.delete(f"/api/plans/{plan_id}").status_code == 204
+    assert client.get(f"/api/plans/{plan_id}").status_code == 404

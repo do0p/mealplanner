@@ -60,7 +60,7 @@ app.add_middleware(
 )
 
 
-@app.get("/version")
+@app.get("/api/version")
 def version():
     from app.config import settings
     return {
@@ -70,7 +70,7 @@ def version():
     }
 
 
-@app.get("/health")
+@app.get("/api/health")
 def health():
     return {"status": "ok"}
 
@@ -78,9 +78,9 @@ def health():
 # Routers are included as they are built.
 from app.routers import recipes, plans, imports  # noqa: E402
 
-app.include_router(recipes.router)
-app.include_router(plans.router)
-app.include_router(imports.router)
+app.include_router(recipes.router, prefix="/api")
+app.include_router(plans.router, prefix="/api")
+app.include_router(imports.router, prefix="/api")
 
 
 # Serve the built Angular app if present. In dev the frontend runs separately

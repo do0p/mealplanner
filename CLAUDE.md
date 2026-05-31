@@ -105,25 +105,27 @@ frontend/src/app/
 
 ## Key API endpoints
 
+All API routes are under the `/api` prefix to avoid conflicts with Angular's client-side routes (which share paths like `/recipes/:id`).
+
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | /recipes/ | list (default: status=accepted) |
-| GET | /recipes/{id} | full recipe with ingredients + steps |
-| PUT | /recipes/{id} | update title / ingredients / steps |
-| DELETE | /recipes/{id} | delete |
-| GET | /recipes/{id}/source | serve original uploaded file |
-| GET | /plans/ | list plans |
-| POST | /plans/ | create plan |
-| PUT | /plans/{id} | update name + replace entries |
-| GET | /plans/{id}/shopping-list | computed shopping list |
-| GET | /imports/llm-status | live Ollama health probe |
-| GET | /imports/ | list import jobs |
-| POST | /imports/uploads | upload file (LLM-free) |
-| POST | /imports/process | trigger background extraction |
-| GET | /imports/{id} | job detail + draft recipes |
-| POST | /imports/{id}/accept | accept drafts (all or selected) |
-| GET | /health | health check |
-| GET | /version | app version |
+| GET | /api/recipes/ | list (default: status=accepted) |
+| GET | /api/recipes/{id} | full recipe with ingredients + steps |
+| PUT | /api/recipes/{id} | update title / ingredients / steps |
+| DELETE | /api/recipes/{id} | delete |
+| GET | /api/recipes/{id}/source | serve original uploaded file |
+| GET | /api/plans/ | list plans |
+| POST | /api/plans/ | create plan |
+| PUT | /api/plans/{id} | update name + replace entries |
+| GET | /api/plans/{id}/shopping-list | computed shopping list |
+| GET | /api/imports/llm-status | live Ollama health probe |
+| GET | /api/imports/ | list import jobs |
+| POST | /api/imports/uploads | upload file (LLM-free) |
+| POST | /api/imports/process | trigger background extraction |
+| GET | /api/imports/{id} | job detail + draft recipes |
+| POST | /api/imports/{id}/accept | accept drafts (all or selected) |
+| GET | /api/health | health check |
+| GET | /api/version | app version + timezone + default_servings |
 
 ## Testing
 

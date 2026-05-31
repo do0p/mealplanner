@@ -66,7 +66,7 @@ def cleanup():
 
 def test_upload_creates_pending_job(tmp):
     client, _ = _make_client(tmp_dir=tmp)
-    r = client.post("/imports/uploads", files={"file": ("test.pdf", _PDF_BYTES, "application/pdf")})
+    r = client.post("/api/imports/uploads", files={"file": ("test.pdf", _PDF_BYTES, "application/pdf")})
     assert r.status_code == 201
     job = r.json()
     assert job["status"] == "pending"
@@ -76,24 +76,24 @@ def test_upload_creates_pending_job(tmp):
 
 def test_upload_unsupported_format_returns_415(tmp):
     client, _ = _make_client(tmp_dir=tmp)
-    r = client.post("/imports/uploads", files={"file": ("doc.epub", b"PK\x03\x04", "application/epub")})
+    r = client.post("/api/imports/uploads", files={"file": ("doc.epub", b"PK\x03\x04", "application/epub")})
     assert r.status_code == 415
 
 
 def test_list_jobs_empty(tmp):
     client, _ = _make_client(tmp_dir=tmp)
-    assert client.get("/imports/").json() == []
+    assert client.get("/api/imports/").json() == []
 
 
 def test_process_creates_accepted_recipes(tmp):
     client, svc = _make_client(tmp_dir=tmp)
-    upload = client.post("/imports/uploads", files={"file": ("r.pdf", _PDF_BYTES, "application/pdf")})
+    upload = client.post("/api/imports/uploads", files={"file": ("r.pdf", _PDF_BYTES, "application/pdf")})
     job_id = upload.json()["id"]
 
     # simulate processing synchronously (fake extractor, no background needed)
     svc.process_job(job_id)
 
-    job = client.get(f"/imports/{job_id}").json()
+    job = client.get(f"/api/imports/{job_id}").json()
     assert job["status"] == "completed"
     assert job["recipe_count"] == 1
     assert len(job["recipes"]) == 1
@@ -111,13 +111,13 @@ def test_ingredients_stored_per_person(tmp):
         )
     ]
     client, svc = _make_client(fake_recipes=recipes, tmp_dir=tmp)
-    client.post("/imports/uploads", files={"file": ("cake.pdf", _PDF_BYTES, "application/pdf")})
-    jobs = client.get("/imports/").json()
+    client.post("/api/imports/uploads", files={"file": ("cake.pdf", _PDF_BYTES, "application/pdf")})
+    jobs = client.get("/api/imports/").json()
     svc.process_job(jobs[0]["id"])
 
-    job = client.get(f"/imports/{jobs[0]['id']}").json()
+    job = client.get(f"/api/imports/{jobs[0]['id']}").json()
     recipe_id = job["recipes"][0]["id"]
-    detail = client.get(f"/recipes/{recipe_id}?status=all").json()
+    detail = client.get(f"/api/recipes/{recipe_id}?status=all").json()
 
     flour = detail["ingredients"][0]
     assert flour["name"] == "Flour"
@@ -135,12 +135,12 @@ def test_imperial_converted_at_import(tmp):
         )
     ]
     client, svc = _make_client(fake_recipes=recipes, tmp_dir=tmp)
-    client.post("/imports/uploads", files={"file": ("b.pdf", _PDF_BYTES, "application/pdf")})
-    jobs = client.get("/imports/").json()
+    client.post("/api/imports/uploads", files={"file": ("b.pdf", _PDF_BYTES, "application/pdf")})
+    jobs = client.get("/api/imports/").json()
     svc.process_job(jobs[0]["id"])
-    job = client.get(f"/imports/{jobs[0]['id']}").json()
+    job = client.get(f"/api/imports/{jobs[0]['id']}").json()
     recipe_id = job["recipes"][0]["id"]
-    detail = client.get(f"/recipes/{recipe_id}?status=all").json()
+    detail = client.get(f"/api/recipes/{recipe_id}?status=all").json()
 
     milk = detail["ingredients"][0]
     assert milk["unit"] == "cup"
@@ -150,6 +150,6 @@ def test_imperial_converted_at_import(tmp):
 
 def test_llm_status_fake_extractor_available(tmp):
     client, _ = _make_client(tmp_dir=tmp)
-    r = client.get("/imports/llm-status")
+    r = client.get("/api/imports/llm-status")
     assert r.status_code == 200
     assert r.json()["available"] is True

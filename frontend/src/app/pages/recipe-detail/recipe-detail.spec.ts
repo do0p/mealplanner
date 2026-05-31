@@ -72,11 +72,25 @@ describe('RecipeDetailPage — scaledIngredients', () => {
     expect(component.scaledIngredients()[0].display).toBe('g');
   });
 
-  it('ceiling-rounds whole_unit_only ingredients instead of showing fractions', () => {
-    // 0.5 * 3 = 1.5 — without whole_unit_only this would render as '1 1/2'
+  it('rounds whole_unit_only to nearest integer instead of showing fractions', () => {
+    // 0.5 * 3 = 1.5 → round → 2
     component.recipe.set(makeRecipe([makeIngredient({ quantity_per_person: 0.5, unit: null, whole_unit_only: true })]));
     component.people.set(3);
     expect(component.scaledIngredients()[0].display).toBe('2');
+  });
+
+  it('rounds down for whole_unit_only when fraction is below 0.5', () => {
+    // 1/3 * 4 = 1.333 → round → 1 (not 2)
+    component.recipe.set(makeRecipe([makeIngredient({ quantity_per_person: 1 / 3, unit: null, whole_unit_only: true })]));
+    component.people.set(4);
+    expect(component.scaledIngredients()[0].display).toBe('1');
+  });
+
+  it('never drops whole_unit_only ingredient below 1', () => {
+    // 1/3 * 1 = 0.333 → round → 0 → clamped to 1
+    component.recipe.set(makeRecipe([makeIngredient({ quantity_per_person: 1 / 3, unit: null, whole_unit_only: true })]));
+    component.people.set(1);
+    expect(component.scaledIngredients()[0].display).toBe('1');
   });
 
   it('shows fraction for non-whole-unit ingredients with the same quantity', () => {

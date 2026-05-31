@@ -48,7 +48,7 @@ export class RecipeDetailPage implements OnInit {
     if (!r) return [];
     return r.ingredients.map(ing => {
       let qty = ing.quantity_per_person != null ? ing.quantity_per_person * n : null;
-      if (qty != null && ing.whole_unit_only) qty = Math.ceil(qty);
+      if (qty != null && ing.whole_unit_only) qty = Math.max(1, Math.round(qty));
       return { ...ing, display: formatQty(qty, ing.unit) };
     });
   });

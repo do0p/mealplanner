@@ -112,7 +112,7 @@ make deploy    # multi-platform build + push
 
 Ingredients are stored **per person** (`book_quantity ÷ book_servings`). Scaling to N servings = `quantity_per_person × N`. Metric units (g, ml) are rounded to the nearest 5; culinary units (cup, tbsp, tsp) are rendered as fractions where appropriate.
 
-A small hardcoded list of indivisible ingredients (currently: eggs) is ceiling-rounded in the display — e.g. 1.5 eggs becomes 2. This list lives in `backend/app/models.py` (`WHOLE_UNIT_INGREDIENTS`) and takes effect immediately for all existing recipes without re-importing.
+A small hardcoded list of indivisible ingredients (currently: eggs) is rounded to the nearest integer in the display, with a minimum of 1 — e.g. 1.3 eggs shows as 1, 1.5 eggs shows as 2, and a sub-1 result (e.g. 1 egg across 3 people scaled to 1) still shows as 1. This list lives in `backend/app/models.py` (`WHOLE_UNIT_INGREDIENTS`) and takes effect immediately for all existing recipes without re-importing.
 
 ### Shopping list aggregation
 
