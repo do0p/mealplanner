@@ -18,6 +18,7 @@ A self-hosted meal-planning webapp. Upload recipe PDFs (or other formats in the 
 - **Shopping list** — auto-generated from the active plan, aggregated by ingredient and grouped by category, with checkboxes and a print view
 - **Dark mode** — toggle between light and dark themes; preference is persisted in the browser
 - **Upload decoupling** — file upload is instant and LLM-free; processing runs as a background task when the LLM is reachable
+- **MCP server** — exposes recipes and plans as tools for AI assistants via the Model Context Protocol (no authentication, LAN-only)
 - **No cloud required** — runs entirely on your own hardware; LLM can be local via Ollama
 
 ---
@@ -97,6 +98,43 @@ To push to your own registry, copy `.env.make.example` → `.env.make` and set `
 ```bash
 make deploy    # multi-platform build + push
 ```
+
+---
+
+## MCP server
+
+A separate Docker image (`Dockerfile.mcp`) exposes the mealplanner database as an MCP server over HTTP (Streamable HTTP transport). It has **no authentication** and is intended for use on a trusted local network.
+
+### Tools exposed
+
+| Tool | Description |
+|------|-------------|
+| `list_recipes` | List accepted recipes; optional filters: `course`, `is_vegetarian`, `is_vegan`, `is_favourite` |
+| `get_recipe` | Full recipe detail including ingredients and steps |
+| `create_recipe` | Create a recipe directly (no PDF import); ingredient quantities per person |
+| `list_plans` | List all meal plans |
+| `get_plan` | Plan detail with all entries |
+| `create_plan` | Create a plan, optionally pre-populated with entries |
+| `update_plan` | Rename a plan or replace its entries |
+| `get_shopping_list` | Shopping list for a plan, scaled and grouped by category |
+
+### Running the MCP server
+
+The MCP container shares the same data volume as the main webapp:
+
+```bash
+docker build -f backend/Dockerfile.mcp -t mealplanner-mcp backend/
+
+docker run -d \
+  --name mealplanner-mcp \
+  --restart unless-stopped \
+  -p 8001:8001 \
+  -v /path/to/data:/app/data \
+  mealplanner-mcp
+```
+
+MCP endpoint: `http://<host>:8001/mcp`
+Health check: `http://<host>:8001/health`
 
 ---
 

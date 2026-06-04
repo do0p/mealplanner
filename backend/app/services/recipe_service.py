@@ -9,6 +9,7 @@ from app.models import (
     IngredientWrite,
     InstructionStep,
     Recipe,
+    RecipeCreate,
     RecipeRead,
     RecipeSummary,
     RecipeUpdate,
@@ -51,6 +52,42 @@ def _to_recipe_read(r: Recipe) -> RecipeRead:
         ],
         steps=[StepRead(step_number=s.step_number, text=s.text) for s in r.steps],
     )
+
+
+def create_recipe(session: Session, data: RecipeCreate) -> RecipeRead:
+    recipe = Recipe(
+        title=data.title,
+        base_servings=data.base_servings,
+        notes=data.notes,
+        course=data.course,
+        calories_per_person=data.calories_per_person,
+        protein_per_person=data.protein_per_person,
+        is_vegetarian=data.is_vegetarian,
+        is_vegan=data.is_vegan,
+        is_favourite=data.is_favourite,
+        is_want_to_try=data.is_want_to_try,
+    )
+    recipe.ingredients = [
+        Ingredient(
+            name=ing.name,
+            quantity_per_person=ing.quantity_per_person,
+            unit=ing.unit,
+            category=ing.category,
+            raw_text=ing.raw_text,
+            sort_order=idx,
+        )
+        for idx, ing in enumerate(data.ingredients)
+    ]
+    recipe.steps = [
+        InstructionStep(step_number=idx + 1, text=text)
+        for idx, text in enumerate(data.steps)
+    ]
+    session.add(recipe)
+    session.commit()
+    session.refresh(recipe)
+    _ = recipe.ingredients
+    _ = recipe.steps
+    return _to_recipe_read(recipe)
 
 
 def list_recipes(session: Session, status: str | None = "accepted") -> list[RecipeSummary]:

@@ -182,6 +182,21 @@ class IngredientWrite(BaseModel):
     raw_text: str | None = None
 
 
+class RecipeCreate(BaseModel):
+    title: str
+    base_servings: int | None = None
+    notes: str | None = None
+    course: str | None = None
+    calories_per_person: float | None = None
+    protein_per_person: float | None = None
+    is_vegetarian: bool = False
+    is_vegan: bool = False
+    is_favourite: bool = False
+    is_want_to_try: bool = False
+    ingredients: list[IngredientWrite] = []
+    steps: list[str] = []
+
+
 class RecipeUpdate(BaseModel):
     title: str | None = None
     base_servings: int | None = None
