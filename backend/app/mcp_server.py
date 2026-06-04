@@ -109,7 +109,9 @@ async def list_tools() -> list[Tool]:
             name="create_plan",
             description=(
                 "Create a new weekly meal plan, optionally pre-populated with recipe entries. "
-                "slot is a free-form label, e.g. 'Mon-dinner', 'Tue-lunch'."
+                "slot must be '{Day}-{Meal}' where Day is one of: Monday, Tuesday, Wednesday, "
+                "Thursday, Friday, Saturday, Sunday — and Meal is one of: Breakfast, Lunch, Dinner. "
+                "Example: 'Monday-Dinner', 'Tuesday-Lunch'."
             ),
             inputSchema={
                 "type": "object",
@@ -136,7 +138,10 @@ async def list_tools() -> list[Tool]:
             name="update_plan",
             description=(
                 "Update a meal plan's name or replace its entries entirely. "
-                "Passing entries replaces ALL existing entries for the plan."
+                "Passing entries replaces ALL existing entries for the plan. "
+                "slot must be '{Day}-{Meal}' where Day is one of: Monday, Tuesday, Wednesday, "
+                "Thursday, Friday, Saturday, Sunday — and Meal is one of: Breakfast, Lunch, Dinner. "
+                "Example: 'Monday-Dinner', 'Tuesday-Lunch'."
             ),
             inputSchema={
                 "type": "object",
