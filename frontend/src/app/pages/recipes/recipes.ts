@@ -37,7 +37,7 @@ export class RecipesPage implements OnInit {
 
   private _isKeto(r: RecipeSummary): boolean {
     const fat = this._ketoFatPct(r), carbs = this._ketoCarbsPct(r);
-    return fat != null && carbs != null && fat >= 75 && carbs <= 5;
+    return fat != null && carbs != null && Math.round(fat) >= 75 && Math.round(carbs) <= 5;
   }
 
   recipes = signal<RecipeSummary[]>([]);
