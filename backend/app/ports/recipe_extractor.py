@@ -25,8 +25,12 @@ class ExtractedRecipe(BaseModel):
     is_vegan: bool = False
     calories_total: float | None = None          # estimated total kcal for the whole recipe
     protein_total: float | None = None           # estimated total protein (g) for the whole recipe
+    fat_total: float | None = None               # estimated total fat (g) for the whole recipe
+    carbs_total: float | None = None             # estimated total carbs (g) for the whole recipe
     calories_per_serving_stated: float | None = None  # explicitly stated per-serving kcal from the text
     protein_per_serving_stated: float | None = None   # explicitly stated per-serving protein (g) from the text
+    fat_per_serving_stated: float | None = None       # explicitly stated per-serving fat (g) from the text
+    carbs_per_serving_stated: float | None = None     # explicitly stated per-serving carbs (g) from the text
 
 
 class RecipeExtractor(ABC):

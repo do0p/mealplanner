@@ -63,10 +63,14 @@ _EXTRACT_TOOL = {
                             "properties": {
                                 "calories": {"type": "number"},
                                 "protein_g": {"type": "number"},
+                                "fat_g": {"type": "number"},
+                                "carbs_g": {"type": "number"},
                                 "calories_per_serving": {"type": "number"},
                                 "protein_g_per_serving": {"type": "number"},
+                                "fat_g_per_serving": {"type": "number"},
+                                "carbs_g_per_serving": {"type": "number"},
                             },
-                            "required": ["calories", "protein_g"],
+                            "required": ["calories", "protein_g", "fat_g", "carbs_g"],
                         },
                     },
                     "required": ["title", "page_numbers", "course", "ingredients", "steps", "nutrition"],
@@ -88,9 +92,10 @@ _IMAGE_SYSTEM_PROMPT = (
     "pantry/spices/frozen/beverages), raw_text (original text).\n"
     "4. Set course to one of: breakfast, appetizer, soup, salad, main, "
     "side, dessert, snack, beverage.\n"
-    "5. Estimate total calories (kcal) and protein (g) for the whole recipe "
+    "5. Estimate total calories (kcal), protein (g), fat (g), and carbs (g) for the whole recipe "
     "as written (before dividing by servings). If the image explicitly states "
-    "per-serving values, capture those in calories_per_serving and protein_g_per_serving.\n"
+    "per-serving values, capture those in calories_per_serving, protein_g_per_serving, "
+    "fat_g_per_serving, and carbs_g_per_serving.\n"
     "6. Set page_numbers to [1] for all recipes.\n"
     "7. Set is_vegetarian=true if the recipe contains no meat or seafood. "
     "Set is_vegan=true if it also contains no animal products "
@@ -108,9 +113,10 @@ _SYSTEM_PROMPT = (
     "pantry/spices/frozen/beverages), raw_text (original line).\n"
     "4. Set course to one of: breakfast, appetizer, soup, salad, main, "
     "side, dessert, snack, beverage.\n"
-    "5. Estimate total calories (kcal) and protein (g) for the whole recipe "
+    "5. Estimate total calories (kcal), protein (g), fat (g), and carbs (g) for the whole recipe "
     "as written (before dividing by servings). If the text also explicitly states "
-    "per-serving values, capture those in calories_per_serving and protein_g_per_serving.\n"
+    "per-serving values, capture those in calories_per_serving, protein_g_per_serving, "
+    "fat_g_per_serving, and carbs_g_per_serving.\n"
     "6. page_numbers must reference the [Page N] markers in the source text.\n"
     "7. Set is_vegetarian=true if the recipe contains no meat or seafood. "
     "Set is_vegan=true if it also contains no animal products "
@@ -367,8 +373,12 @@ class ClaudeRecipeExtractor(RecipeExtractor):
                 is_vegan=bool(data_item.get("is_vegan", False)),
                 calories_total=nutrition.get("calories"),
                 protein_total=nutrition.get("protein_g"),
+                fat_total=nutrition.get("fat_g"),
+                carbs_total=nutrition.get("carbs_g"),
                 calories_per_serving_stated=nutrition.get("calories_per_serving"),
                 protein_per_serving_stated=nutrition.get("protein_g_per_serving"),
+                fat_per_serving_stated=nutrition.get("fat_g_per_serving"),
+                carbs_per_serving_stated=nutrition.get("carbs_g_per_serving"),
                 ingredients=ingredients,
                 steps=data_item.get("steps", []),
                 notes=data_item.get("notes"),
@@ -469,8 +479,12 @@ class ClaudeRecipeExtractor(RecipeExtractor):
                 is_vegan=bool(data.get("is_vegan", False)),
                 calories_total=nutrition.get("calories"),
                 protein_total=nutrition.get("protein_g"),
+                fat_total=nutrition.get("fat_g"),
+                carbs_total=nutrition.get("carbs_g"),
                 calories_per_serving_stated=nutrition.get("calories_per_serving"),
                 protein_per_serving_stated=nutrition.get("protein_g_per_serving"),
+                fat_per_serving_stated=nutrition.get("fat_g_per_serving"),
+                carbs_per_serving_stated=nutrition.get("carbs_g_per_serving"),
                 ingredients=ingredients,
                 steps=data.get("steps", []),
                 notes=data.get("notes"),

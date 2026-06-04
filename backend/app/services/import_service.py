@@ -248,6 +248,16 @@ class ImportService:
                 else round(ext.protein_total / servings, 1) if ext.protein_total
                 else None
             ),
+            fat_per_person=(
+                round(ext.fat_per_serving_stated, 1) if ext.fat_per_serving_stated
+                else round(ext.fat_total / servings, 1) if ext.fat_total
+                else None
+            ),
+            carbs_per_person=(
+                round(ext.carbs_per_serving_stated, 1) if ext.carbs_per_serving_stated
+                else round(ext.carbs_total / servings, 1) if ext.carbs_total
+                else None
+            ),
             is_vegetarian=ext.is_vegetarian,
             is_vegan=ext.is_vegan,
             source_pages=ext.source_pages,
