@@ -93,6 +93,9 @@
   font-size: .8rem;
   font-weight: 600;
   line-height: 1.3;
+  color: var(--color-primary);
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
 }
 
 .cell-controls {

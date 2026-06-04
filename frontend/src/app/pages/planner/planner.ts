@@ -14,7 +14,7 @@ export function slotKey(day: string, meal: string): string {
 
 @Component({
   selector: 'app-planner',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './planner.html',
   styleUrl: './planner.scss',
 })

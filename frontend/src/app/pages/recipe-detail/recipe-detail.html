@@ -6,7 +6,7 @@
   } @else {
     <div class="flex justify-between" style="margin-bottom:1rem;flex-wrap:wrap;gap:.75rem">
       <div>
-        <a routerLink="/recipes" class="text-muted" style="font-size:.85rem">← Recipes</a>
+        <a (click)="goBack()" class="text-muted" style="font-size:.85rem;cursor:pointer">← Back</a>
         @if (editing()) {
           <input class="title-input" [ngModel]="draftTitle()" (ngModelChange)="draftTitle.set($event)" />
         } @else {

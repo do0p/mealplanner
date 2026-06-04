@@ -59,7 +59,7 @@
               <div class="grid-cell" [class.filled]="!!entry">
                 @if (entry) {
                   <div class="cell-content">
-                    <div class="cell-title">{{ entry.recipe_title }}</div>
+                    <a class="cell-title" [routerLink]="['/recipes', entry.recipe_id]">{{ entry.recipe_title }}</a>
                     <div class="cell-controls">
                       <button class="btn-secondary btn-sm" (click)="updatePeople(day, meal, entry.people - 1)">−</button>
                       <span class="cell-people">{{ entry.people }} ppl</span>

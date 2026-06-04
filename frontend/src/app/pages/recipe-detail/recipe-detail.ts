@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { ConfirmService } from '../../confirm.service';
 import { Recipe } from '../../models';
@@ -18,13 +18,14 @@ interface IngredientDraft {
 
 @Component({
   selector: 'app-recipe-detail',
-  imports: [DecimalPipe, FormsModule, RouterLink],
+  imports: [DecimalPipe, FormsModule],
   templateUrl: './recipe-detail.html',
   styleUrl: './recipe-detail.scss',
 })
 export class RecipeDetailPage implements OnInit {
   private api = inject(ApiService);
   private confirm = inject(ConfirmService);
+  private location = inject(Location);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
@@ -92,6 +93,10 @@ export class RecipeDetailPage implements OnInit {
       },
       error: () => this.loading.set(false),
     });
+  }
+
+  goBack() {
+    this.location.back();
   }
 
   startEdit() {
