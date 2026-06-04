@@ -70,12 +70,12 @@ export class RecipeDetailPage implements OnInit {
     if (cal == null && prot == null && fat == null && carbs == null) return null;
     let ratio: { fat: number; prot: number; carbs: number } | null = null;
     if (fat != null && carbs != null) {
-      const total = fat * 9 + (prot ?? 0) * 4 + carbs * 4;
+      const total = fat + (prot ?? 0) + carbs;
       if (total > 0) {
         ratio = {
-          fat: Math.round(fat * 9 / total * 100),
-          prot: Math.round((prot ?? 0) * 4 / total * 100),
-          carbs: Math.round(carbs * 4 / total * 100),
+          fat: Math.round(fat / total * 100),
+          prot: Math.round((prot ?? 0) / total * 100),
+          carbs: Math.round(carbs / total * 100),
         };
       }
     }

@@ -24,20 +24,20 @@ export class RecipesPage implements OnInit {
   private _ketoFatPct(r: RecipeSummary): number | null {
     const f = r.fat_per_person, c = r.carbs_per_person, p = r.protein_per_person;
     if (f == null || c == null) return null;
-    const total = f * 9 + (p ?? 0) * 4 + c * 4;
-    return total > 0 ? (f * 9 / total) * 100 : null;
+    const total = f + (p ?? 0) + c;
+    return total > 0 ? (f / total) * 100 : null;
   }
 
   private _ketoCarbsPct(r: RecipeSummary): number | null {
     const f = r.fat_per_person, c = r.carbs_per_person, p = r.protein_per_person;
     if (f == null || c == null) return null;
-    const total = f * 9 + (p ?? 0) * 4 + c * 4;
-    return total > 0 ? (c * 4 / total) * 100 : null;
+    const total = f + (p ?? 0) + c;
+    return total > 0 ? (c / total) * 100 : null;
   }
 
   private _isKeto(r: RecipeSummary): boolean {
     const fat = this._ketoFatPct(r), carbs = this._ketoCarbsPct(r);
-    return fat != null && carbs != null && fat > 70 && carbs < 5;
+    return fat != null && carbs != null && fat >= 75 && carbs <= 5;
   }
 
   recipes = signal<RecipeSummary[]>([]);
