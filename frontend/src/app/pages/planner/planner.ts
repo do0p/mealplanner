@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { ConfirmService } from '../../confirm.service';
 import { Plan, PlanEntry, PlanSummary, RecipeSummary } from '../../models';
@@ -21,6 +21,7 @@ export function slotKey(day: string, meal: string): string {
 export class PlannerPage implements OnInit {
   private api = inject(ApiService);
   private confirm = inject(ConfirmService);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
 
   days = DAYS;
@@ -75,11 +76,18 @@ export class PlannerPage implements OnInit {
   });
 
   ngOnInit() {
-    this.api.getPlans().subscribe(p => this.plans.set(p));
+    const initialPlanId = Number(this.route.snapshot.queryParamMap.get('plan')) || null;
+    this.api.getPlans().subscribe(p => {
+      this.plans.set(p);
+      if (initialPlanId && p.some(pl => pl.id === initialPlanId)) {
+        this.api.getPlan(initialPlanId).subscribe(plan => this.selectedPlan.set(plan));
+      }
+    });
     this.api.getRecipes('accepted').subscribe(r => this.allRecipes.set(r));
   }
 
   selectPlan(id: number) {
+    this.router.navigate([], { queryParams: { plan: id }, replaceUrl: true });
     this.api.getPlan(id).subscribe(p => this.selectedPlan.set(p));
   }
 
@@ -92,6 +100,7 @@ export class PlannerPage implements OnInit {
       this.selectedPlan.set(p);
       this.newPlanName.set('');
       this.creatingPlan.set(false);
+      this.router.navigate([], { queryParams: { plan: p.id }, replaceUrl: true });
     });
   }
 
@@ -102,6 +111,7 @@ export class PlannerPage implements OnInit {
     this.api.deletePlan(plan.id).subscribe(() => {
       this.plans.update(pl => pl.filter(p => p.id !== plan.id));
       this.selectedPlan.set(null);
+      this.router.navigate([], { queryParams: {}, replaceUrl: true });
     });
   }
 
