@@ -180,10 +180,10 @@ def test_create_plan_with_entries(in_memory_db):
     from app.mcp_server import _dispatch
     plan = json.loads(run(_dispatch("create_plan", {
         "name": "Week 2",
-        "entries": [{"recipe_id": r.id, "slot": "Mon-dinner", "people": 3}],
+        "entries": [{"recipe_id": r.id, "day": "Monday", "meal": "Dinner", "people": 3}],
     })))
     assert len(plan["entries"]) == 1
-    assert plan["entries"][0]["slot"] == "Mon-dinner"
+    assert plan["entries"][0]["slot"] == "Monday-Dinner"
     assert plan["entries"][0]["people"] == 3
 
 
@@ -208,18 +208,18 @@ def test_update_plan_entries_replaces_all(in_memory_db):
     from app.mcp_server import _dispatch
     plan = json.loads(run(_dispatch("create_plan", {
         "name": "Week",
-        "entries": [{"recipe_id": r1.id, "slot": "Mon-dinner"}],
+        "entries": [{"recipe_id": r1.id, "day": "Monday", "meal": "Dinner"}],
     })))
     updated = json.loads(run(_dispatch("update_plan", {
         "plan_id": plan["id"],
         "entries": [
-            {"recipe_id": r2.id, "slot": "Tue-lunch"},
-            {"recipe_id": r1.id, "slot": "Wed-dinner"},
+            {"recipe_id": r2.id, "day": "Tuesday", "meal": "Lunch"},
+            {"recipe_id": r1.id, "day": "Wednesday", "meal": "Dinner"},
         ],
     })))
     assert len(updated["entries"]) == 2
     slots = {e["slot"] for e in updated["entries"]}
-    assert slots == {"Tue-lunch", "Wed-dinner"}
+    assert slots == {"Tuesday-Lunch", "Wednesday-Dinner"}
 
 
 def test_update_plan_not_found(in_memory_db):
@@ -242,7 +242,7 @@ def test_get_shopping_list_aggregates_ingredients(in_memory_db):
     from app.mcp_server import _dispatch
     plan = json.loads(run(_dispatch("create_plan", {
         "name": "Week",
-        "entries": [{"recipe_id": r.id, "slot": "Mon-dinner", "people": 2}],
+        "entries": [{"recipe_id": r.id, "day": "Monday", "meal": "Dinner", "people": 2}],
     })))
     sl = json.loads(run(_dispatch("get_shopping_list", {"plan_id": plan["id"]})))
     categories = {c["category"]: c["items"] for c in sl["categories"]}

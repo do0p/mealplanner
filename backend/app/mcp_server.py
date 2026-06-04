@@ -107,12 +107,7 @@ async def list_tools() -> list[Tool]:
         ),
         Tool(
             name="create_plan",
-            description=(
-                "Create a new weekly meal plan, optionally pre-populated with recipe entries. "
-                "slot must be '{Day}-{Meal}' where Day is one of: Monday, Tuesday, Wednesday, "
-                "Thursday, Friday, Saturday, Sunday — and Meal is one of: Breakfast, Lunch, Dinner. "
-                "Example: 'Monday-Dinner', 'Tuesday-Lunch'."
-            ),
+            description="Create a new weekly meal plan, optionally pre-populated with recipe entries.",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -123,11 +118,11 @@ async def list_tools() -> list[Tool]:
                             "type": "object",
                             "properties": {
                                 "recipe_id": {"type": "integer"},
-                                "slot": {"type": "string"},
+                                "day": {"type": "string", "enum": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]},
+                                "meal": {"type": "string", "enum": ["Breakfast", "Lunch", "Dinner"]},
                                 "people": {"type": "integer"},
-                                "sort_order": {"type": "integer"},
                             },
-                            "required": ["recipe_id", "slot"],
+                            "required": ["recipe_id", "day", "meal"],
                         },
                     },
                 },
@@ -138,10 +133,7 @@ async def list_tools() -> list[Tool]:
             name="update_plan",
             description=(
                 "Update a meal plan's name or replace its entries entirely. "
-                "Passing entries replaces ALL existing entries for the plan. "
-                "slot must be '{Day}-{Meal}' where Day is one of: Monday, Tuesday, Wednesday, "
-                "Thursday, Friday, Saturday, Sunday — and Meal is one of: Breakfast, Lunch, Dinner. "
-                "Example: 'Monday-Dinner', 'Tuesday-Lunch'."
+                "Passing entries replaces ALL existing entries for the plan."
             ),
             inputSchema={
                 "type": "object",
@@ -154,11 +146,11 @@ async def list_tools() -> list[Tool]:
                             "type": "object",
                             "properties": {
                                 "recipe_id": {"type": "integer"},
-                                "slot": {"type": "string"},
+                                "day": {"type": "string", "enum": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]},
+                                "meal": {"type": "string", "enum": ["Breakfast", "Lunch", "Dinner"]},
                                 "people": {"type": "integer"},
-                                "sort_order": {"type": "integer"},
                             },
-                            "required": ["recipe_id", "slot"],
+                            "required": ["recipe_id", "day", "meal"],
                         },
                     },
                 },
@@ -265,9 +257,9 @@ async def _dispatch(name: str, arguments: dict) -> str:
         entries = [
             EntryWrite(
                 recipe_id=e["recipe_id"],
-                slot=e["slot"],
+                slot=f"{e['day']}-{e['meal']}",
                 people=e.get("people", 2),
-                sort_order=e.get("sort_order", idx),
+                sort_order=idx,
             )
             for idx, e in enumerate(arguments.get("entries", []))
         ]
@@ -283,9 +275,9 @@ async def _dispatch(name: str, arguments: dict) -> str:
             parsed_entries = [
                 EntryWrite(
                     recipe_id=e["recipe_id"],
-                    slot=e["slot"],
+                    slot=f"{e['day']}-{e['meal']}",
                     people=e.get("people", 2),
-                    sort_order=e.get("sort_order", idx),
+                    sort_order=idx,
                 )
                 for idx, e in enumerate(arguments["entries"])
             ]
