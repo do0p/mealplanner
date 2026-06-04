@@ -3,7 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../../api.service';
 import { ConfirmService } from '../../confirm.service';
-import { Plan, PlanEntry, PlanSummary, RecipeSummary } from '../../models';
+import { Plan, PlanEntry, PlanSummary, Recipe, RecipeSummary } from '../../models';
+import { formatQty } from '../../settings.service';
 
 export const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const MEALS = ['Breakfast', 'Lunch', 'Dinner'];
@@ -43,6 +44,11 @@ export class PlannerPage implements OnInit {
   pickerVegan = signal(false);
   pickerWantToTry = signal(false);
 
+  hoveredPickerRecipe = signal<RecipeSummary | null>(null);
+  hoveredPickerDetail = signal<Recipe | null>(null);
+  private recipeCache = new Map<number, Recipe>();
+  readonly formatQty = formatQty;
+
   pickerCourses = computed(() => {
     const seen = new Set<string>();
     for (const r of this.allRecipes()) {
@@ -66,6 +72,29 @@ export class PlannerPage implements OnInit {
       (!vgn || r.is_vegan) &&
       (!wtt || r.is_want_to_try)
     );
+  });
+
+  pickerHoverNutrition = computed(() => {
+    const r = this.hoveredPickerRecipe();
+    if (!r) return null;
+    const n = this.pickerPeople();
+    const cal   = r.calories_per_person != null ? Math.round(r.calories_per_person * n) : null;
+    const prot  = r.protein_per_person  != null ? Math.round(r.protein_per_person  * n) : null;
+    const fat   = r.fat_per_person      != null ? Math.round(r.fat_per_person      * n) : null;
+    const carbs = r.carbs_per_person    != null ? Math.round(r.carbs_per_person    * n) : null;
+    if (cal == null && prot == null && fat == null && carbs == null) return null;
+    return { cal, prot, fat, carbs };
+  });
+
+  pickerHoverIngredients = computed(() => {
+    const d = this.hoveredPickerDetail();
+    if (!d) return null;
+    const n = this.pickerPeople();
+    return d.ingredients.map(ing => {
+      let qty = ing.quantity_per_person != null ? ing.quantity_per_person * n : null;
+      if (qty != null && ing.whole_unit_only) qty = Math.max(1, Math.round(qty));
+      return { name: ing.name, display: formatQty(qty, ing.unit) };
+    });
   });
 
   // current plan entries indexed by slot key for O(1) lookup
@@ -127,7 +156,31 @@ export class PlannerPage implements OnInit {
     this.pickerWantToTry.set(false);
   }
 
-  closePicker() { this.pickerSlot.set(null); }
+  closePicker() {
+    this.pickerSlot.set(null);
+    this.hoveredPickerRecipe.set(null);
+    this.hoveredPickerDetail.set(null);
+  }
+
+  hoverPickerItem(r: RecipeSummary) {
+    this.hoveredPickerRecipe.set(r);
+    if (this.recipeCache.has(r.id)) {
+      this.hoveredPickerDetail.set(this.recipeCache.get(r.id)!);
+      return;
+    }
+    this.hoveredPickerDetail.set(null);
+    this.api.getRecipe(r.id).subscribe(detail => {
+      this.recipeCache.set(r.id, detail);
+      if (this.hoveredPickerRecipe()?.id === r.id) {
+        this.hoveredPickerDetail.set(detail);
+      }
+    });
+  }
+
+  unhoverPickerItem() {
+    this.hoveredPickerRecipe.set(null);
+    this.hoveredPickerDetail.set(null);
+  }
 
   pickRecipe(recipe: RecipeSummary) {
     const slot = this.pickerSlot();

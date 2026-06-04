@@ -82,7 +82,8 @@
 <!-- Recipe picker overlay -->
 @if (pickerSlot()) {
   <div class="overlay" (click)="closePicker()">
-    <div class="picker-panel card" (click)="$event.stopPropagation()">
+    <div class="picker-wrapper" (click)="$event.stopPropagation()">
+    <div class="picker-panel card">
       <div class="flex justify-between" style="margin-bottom:.75rem">
         <h3 style="font-size:1rem;font-weight:600">Pick a recipe for {{ pickerSlot() }}</h3>
         <button class="btn-secondary btn-sm" (click)="closePicker()">✕</button>
@@ -109,7 +110,7 @@
       </div>
       <ul class="picker-list">
         @for (r of pickerResults(); track r.id) {
-          <li (click)="pickRecipe(r)">
+          <li (click)="pickRecipe(r)" (mouseenter)="hoverPickerItem(r)" (mouseleave)="unhoverPickerItem()">
             <span class="picker-title">{{ r.title }}</span>
             @if (r.course) { <span class="picker-course">{{ r.course }}</span> }
             @if (r.is_vegan) { <span class="picker-diet vegan">vegan</span> }
@@ -120,6 +121,35 @@
           <li class="text-muted">No recipes found</li>
         }
       </ul>
+    </div>
+
+    @if (hoveredPickerRecipe(); as hr) {
+      <div class="picker-preview card">
+        <div class="picker-preview-title">{{ hr.title }}</div>
+        @if (pickerHoverNutrition(); as n) {
+          <div class="picker-preview-nutrition">
+            @if (n.cal != null) { <span>{{ n.cal }} kcal</span> }
+            @if (n.prot != null) { <span>{{ n.prot }}g protein</span> }
+            @if (n.fat != null) { <span>{{ n.fat }}g fat</span> }
+            @if (n.carbs != null) { <span>{{ n.carbs }}g carbs</span> }
+            <span class="picker-preview-for">for {{ pickerPeople() }} {{ pickerPeople() === 1 ? 'person' : 'people' }}</span>
+          </div>
+        }
+        @if (pickerHoverIngredients(); as ings) {
+          <ul class="picker-preview-ingredients">
+            @for (ing of ings; track ing.name) {
+              <li>
+                <span class="picker-preview-qty">{{ ing.display }}</span>
+                <span>{{ ing.name }}</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="text-muted" style="font-size:.8rem;margin:0">Loading…</p>
+        }
+      </div>
+    }
+
     </div>
   </div>
 }
