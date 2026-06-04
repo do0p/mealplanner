@@ -20,6 +20,8 @@ export interface RecipeSummary {
   course: string | null;
   calories_per_person: number | null;
   protein_per_person: number | null;
+  fat_per_person: number | null;
+  carbs_per_person: number | null;
   is_vegetarian: boolean;
   is_vegan: boolean;
   is_favourite: boolean;

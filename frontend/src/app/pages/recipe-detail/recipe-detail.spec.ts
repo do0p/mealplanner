@@ -26,6 +26,8 @@ function makeRecipe(ingredients: Ingredient[] = []): Recipe {
     course: null,
     calories_per_person: null,
     protein_per_person: null,
+    fat_per_person: null,
+    carbs_per_person: null,
     is_vegetarian: false,
     is_vegan: false,
     is_favourite: false,

@@ -75,7 +75,16 @@
         @if (n.prot != null) {
           <span class="nutrition-item">{{ n.prot | number:'1.0-0' }}g protein</span>
         }
+        @if (n.fat != null) {
+          <span class="nutrition-item">{{ n.fat | number:'1.0-0' }}g fat</span>
+        }
+        @if (n.carbs != null) {
+          <span class="nutrition-item">{{ n.carbs | number:'1.0-0' }}g carbs</span>
+        }
         <span class="nutrition-label">per serving</span>
+        @if (n.ratio) {
+          <span class="nutrition-ratio">F {{ n.ratio.fat }}% / P {{ n.ratio.prot }}% / C {{ n.ratio.carbs }}%</span>
+        }
       </div>
     }
 

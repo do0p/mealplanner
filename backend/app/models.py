@@ -63,6 +63,8 @@ class Recipe(SQLModel, table=True):
     course: str | None = None  # breakfast/appetizer/soup/salad/main/side/dessert/snack/beverage
     calories_per_person: float | None = None
     protein_per_person: float | None = None
+    fat_per_person: float | None = None
+    carbs_per_person: float | None = None
 
     is_vegetarian: bool = Field(default=False)
     is_vegan: bool = Field(default=False)
@@ -149,6 +151,8 @@ class RecipeRead(BaseModel):
     course: str | None
     calories_per_person: float | None
     protein_per_person: float | None
+    fat_per_person: float | None
+    carbs_per_person: float | None
     is_vegetarian: bool
     is_vegan: bool
     is_favourite: bool
@@ -166,6 +170,8 @@ class RecipeSummary(BaseModel):
     course: str | None
     calories_per_person: float | None
     protein_per_person: float | None
+    fat_per_person: float | None
+    carbs_per_person: float | None
     is_vegetarian: bool
     is_vegan: bool
     is_favourite: bool
@@ -189,6 +195,8 @@ class RecipeCreate(BaseModel):
     course: str | None = None
     calories_per_person: float | None = None
     protein_per_person: float | None = None
+    fat_per_person: float | None = None
+    carbs_per_person: float | None = None
     is_vegetarian: bool = False
     is_vegan: bool = False
     is_favourite: bool = False
@@ -204,6 +212,8 @@ class RecipeUpdate(BaseModel):
     course: str | None = None
     calories_per_person: float | None = None
     protein_per_person: float | None = None
+    fat_per_person: float | None = None
+    carbs_per_person: float | None = None
     is_vegetarian: bool | None = None
     is_vegan: bool | None = None
     is_favourite: bool | None = None

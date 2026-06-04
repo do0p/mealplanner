@@ -21,6 +21,25 @@ export class RecipesPage implements OnInit {
   readonly HIGH_PROTEIN_G = 40;
   readonly LOW_CALORIE_KCAL = 500;
 
+  private _ketoFatPct(r: RecipeSummary): number | null {
+    const f = r.fat_per_person, c = r.carbs_per_person, p = r.protein_per_person;
+    if (f == null || c == null) return null;
+    const total = f * 9 + (p ?? 0) * 4 + c * 4;
+    return total > 0 ? (f * 9 / total) * 100 : null;
+  }
+
+  private _ketoCarbsPct(r: RecipeSummary): number | null {
+    const f = r.fat_per_person, c = r.carbs_per_person, p = r.protein_per_person;
+    if (f == null || c == null) return null;
+    const total = f * 9 + (p ?? 0) * 4 + c * 4;
+    return total > 0 ? (c * 4 / total) * 100 : null;
+  }
+
+  private _isKeto(r: RecipeSummary): boolean {
+    const fat = this._ketoFatPct(r), carbs = this._ketoCarbsPct(r);
+    return fat != null && carbs != null && fat > 70 && carbs < 5;
+  }
+
   recipes = signal<RecipeSummary[]>([]);
   loading = signal(true);
 
@@ -33,6 +52,7 @@ export class RecipesPage implements OnInit {
   vegan = this.filterSvc.vegan;
   favourites = this.filterSvc.favourites;
   wantToTry = this.filterSvc.wantToTry;
+  keto = this.filterSvc.keto;
   private _matches(r: RecipeSummary): boolean {
     return (
       r.title.toLowerCase().includes(this.query().toLowerCase()) &&
@@ -41,7 +61,8 @@ export class RecipesPage implements OnInit {
       (!this.vegetarian()  || r.is_vegetarian) &&
       (!this.vegan()       || r.is_vegan) &&
       (!this.favourites()  || r.is_favourite) &&
-      (!this.wantToTry()   || r.is_want_to_try)
+      (!this.wantToTry()   || r.is_want_to_try) &&
+      (!this.keto()        || this._isKeto(r))
     );
   }
 
@@ -69,7 +90,8 @@ export class RecipesPage implements OnInit {
     this.vegetarian() ||
     this.vegan() ||
     this.favourites() ||
-    this.wantToTry()
+    this.wantToTry() ||
+    this.keto()
   );
 
   filtered = computed(() => {
@@ -98,6 +120,9 @@ export class RecipesPage implements OnInit {
   canFilterLowCalorie = computed(() =>
     this.lowCalorie() || this.filtered().some(r =>
       r.calories_per_person != null && r.calories_per_person <= this.LOW_CALORIE_KCAL)
+  );
+  canFilterKeto = computed(() =>
+    this.keto() || this.filtered().some(r => this._isKeto(r))
   );
 
   ngOnInit() {

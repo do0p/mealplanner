@@ -43,6 +43,11 @@
           ≤ {{ LOW_CALORIE_KCAL }} kcal
         </button>
       }
+      @if (canFilterKeto()) {
+        <button class="chip" [class.active]="keto()" (click)="keto.set(!keto())">
+          🥑 Keto
+        </button>
+      }
     </div>
     @if (hasFilters()) {
       <button class="clear-filters" (click)="clearFilters()">✕ Clear filters</button>
@@ -81,13 +86,19 @@
                 <span class="diet-badge vegetarian">🌱 vegetarian</span>
               }
             </div>
-            @if (r.calories_per_person != null || r.protein_per_person != null) {
+            @if (r.calories_per_person != null || r.protein_per_person != null || r.fat_per_person != null || r.carbs_per_person != null) {
               <div class="recipe-card-nutrition">
                 @if (r.calories_per_person != null) {
                   <span>{{ r.calories_per_person | number:'1.0-0' }} kcal</span>
                 }
                 @if (r.protein_per_person != null) {
-                  <span>{{ r.protein_per_person | number:'1.0-0' }}g protein</span>
+                  <span>{{ r.protein_per_person | number:'1.0-0' }}g P</span>
+                }
+                @if (r.fat_per_person != null) {
+                  <span>{{ r.fat_per_person | number:'1.0-0' }}g F</span>
+                }
+                @if (r.carbs_per_person != null) {
+                  <span>{{ r.carbs_per_person | number:'1.0-0' }}g C</span>
                 }
               </div>
             }

@@ -10,6 +10,7 @@ export class RecipeFilterService {
   vegan = signal(false);
   favourites = signal(false);
   wantToTry = signal(false);
+  keto = signal(false);
   clear() {
     this.query.set('');
     this.selectedCourse.set(null);
@@ -19,5 +20,6 @@ export class RecipeFilterService {
     this.vegan.set(false);
     this.favourites.set(false);
     this.wantToTry.set(false);
+    this.keto.set(false);
   }
 }

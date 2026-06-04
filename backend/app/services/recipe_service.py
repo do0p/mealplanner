@@ -30,6 +30,8 @@ def _to_recipe_read(r: Recipe) -> RecipeRead:
         course=r.course,
         calories_per_person=r.calories_per_person,
         protein_per_person=r.protein_per_person,
+        fat_per_person=r.fat_per_person,
+        carbs_per_person=r.carbs_per_person,
         is_vegetarian=r.is_vegetarian,
         is_vegan=r.is_vegan,
         is_favourite=r.is_favourite,
@@ -62,6 +64,8 @@ def create_recipe(session: Session, data: RecipeCreate) -> RecipeRead:
         course=data.course,
         calories_per_person=data.calories_per_person,
         protein_per_person=data.protein_per_person,
+        fat_per_person=data.fat_per_person,
+        carbs_per_person=data.carbs_per_person,
         is_vegetarian=data.is_vegetarian,
         is_vegan=data.is_vegan,
         is_favourite=data.is_favourite,
@@ -103,6 +107,8 @@ def list_recipes(session: Session, status: str | None = "accepted") -> list[Reci
             course=r.course,
             calories_per_person=r.calories_per_person,
             protein_per_person=r.protein_per_person,
+            fat_per_person=r.fat_per_person,
+            carbs_per_person=r.carbs_per_person,
             is_vegetarian=r.is_vegetarian,
             is_vegan=r.is_vegan,
             is_favourite=r.is_favourite,
@@ -140,6 +146,10 @@ def update_recipe(session: Session, recipe_id: int, data: RecipeUpdate) -> Recip
         r.calories_per_person = data.calories_per_person
     if data.protein_per_person is not None:
         r.protein_per_person = data.protein_per_person
+    if data.fat_per_person is not None:
+        r.fat_per_person = data.fat_per_person
+    if data.carbs_per_person is not None:
+        r.carbs_per_person = data.carbs_per_person
     if data.is_vegetarian is not None:
         r.is_vegetarian = data.is_vegetarian
     if data.is_vegan is not None:

@@ -65,8 +65,21 @@ export class RecipeDetailPage implements OnInit {
     if (!r) return null;
     const cal = r.calories_per_person;
     const prot = r.protein_per_person;
-    if (cal == null && prot == null) return null;
-    return { cal, prot };
+    const fat = r.fat_per_person;
+    const carbs = r.carbs_per_person;
+    if (cal == null && prot == null && fat == null && carbs == null) return null;
+    let ratio: { fat: number; prot: number; carbs: number } | null = null;
+    if (fat != null && carbs != null) {
+      const total = fat * 9 + (prot ?? 0) * 4 + carbs * 4;
+      if (total > 0) {
+        ratio = {
+          fat: Math.round(fat * 9 / total * 100),
+          prot: Math.round((prot ?? 0) * 4 / total * 100),
+          carbs: Math.round(carbs * 4 / total * 100),
+        };
+      }
+    }
+    return { cal, prot, fat, carbs, ratio };
   });
 
   ngOnInit() {

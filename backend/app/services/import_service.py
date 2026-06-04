@@ -126,6 +126,8 @@ class ImportService:
                     course=r.course,
                     calories_per_person=r.calories_per_person,
                     protein_per_person=r.protein_per_person,
+                    fat_per_person=r.fat_per_person,
+                    carbs_per_person=r.carbs_per_person,
                     status=r.status,
                     created_at=r.created_at,
                     is_vegetarian=r.is_vegetarian,

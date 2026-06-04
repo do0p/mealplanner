@@ -81,6 +81,8 @@ def _migrate(eng) -> None:
             ("course",              "VARCHAR"),
             ("calories_per_person", "REAL"),
             ("protein_per_person",  "REAL"),
+            ("fat_per_person",      "REAL"),
+            ("carbs_per_person",    "REAL"),
             ("is_vegetarian",       "BOOLEAN DEFAULT 0"),
             ("is_vegan",            "BOOLEAN DEFAULT 0"),
             ("is_favourite",        "BOOLEAN DEFAULT 0"),
