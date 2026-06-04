@@ -12,3 +12,4 @@ dist
 *.pyc
 ollama
 .env.make
+.env.mcp
