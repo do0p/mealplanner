@@ -13,7 +13,11 @@ COPY app/ ./app/
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')" || exit 1
 
-ENV DATA_DIR=/app/data
+ENV DATA_DIR=/app/data \
+    MCP_BASE_URL=https://mealplanner-mcp.example.com \
+    MCP_CLIENT_ID=YOUR_CLIENT_ID \
+    MCP_CLIENT_SECRET=YOUR_CLIENT_SECRET \
+    MCP_API_TOKEN=YOUR_API_TOKEN
 
 EXPOSE 8001
 

@@ -12,7 +12,7 @@ from app.services.import_service import ImportService
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/imports", tags=["imports"])
 
-_MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
+_MAX_UPLOAD_BYTES = 250 * 1024 * 1024  # 250 MB
 
 
 @router.get("/llm-status")
